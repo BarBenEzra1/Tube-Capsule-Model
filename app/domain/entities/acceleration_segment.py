@@ -21,6 +21,3 @@ class AccelerationSegment(Segment):
     
     def __str__(self):
         return f"AccelerationSegment(id={self.id}, traverse_time={self.traverse_time}s, start_time={self.start_time}s, length={self.length}m, starting_position={self.starting_position}m, acceleration={self.acceleration}m/s²)"
-    
-    def __repr__(self):
-        return f"AccelerationSegment(segment_id={self.id}, traverse_time={self.traverse_time}, start_time={self.start_time}, length={self.length}, starting_position={self.starting_position}, acceleration={self.acceleration})" 

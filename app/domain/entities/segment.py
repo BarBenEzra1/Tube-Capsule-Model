@@ -21,6 +21,4 @@ class Segment:
     
     def __str__(self):
         return f"Segment(id={self.id}, traverse_time={self.traverse_time}s, start_time={self.start_time}s, length={self.length}m, starting_position={self.starting_position}m, related_coil_id={self.related_coil_id})"
-    
-    def __repr__(self):
-        return f"Segment(segment_id={self.id}, traverse_time={self.traverse_time}, start_time={self.start_time}, length={self.length}, starting_position={self.starting_position}, related_coil_id={self.related_coil_id})" 
+ 

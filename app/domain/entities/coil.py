@@ -15,6 +15,3 @@ class Coil:
     
     def __str__(self):
         return f"Coil(id={self.id}, length={self.length}m, force={self.force_applied}N)"
-    
-    def __repr__(self):
-        return f"Coil(coil_id={self.id}, length={self.length}, force_applied={self.force_applied})" 

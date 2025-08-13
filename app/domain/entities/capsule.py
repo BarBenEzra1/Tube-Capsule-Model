@@ -13,6 +13,3 @@ class Capsule:
     
     def __str__(self):
         return f"Capsule(id={self.id}, mass={self.mass}kg, initial_velocity={self.initial_velocity}m/s)"
-    
-    def __repr__(self):
-        return f"Capsule(capsule_id={self.id}, mass={self.mass}, initial_velocity={self.initial_velocity})" 
