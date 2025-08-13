@@ -1,12 +1,12 @@
-from app.domain.entities.tube import Tube
+from app.domain.entities.coil import Coil
 import os, json
 from pathlib import Path
 import tempfile
 
 
-def count_tubes() -> int:
+def count_coils() -> int:
     try:
-        with open(Tube.DATABASE_FILE_PATH, "rb") as f:
+        with open(Coil.DATABASE_FILE_PATH, "rb") as f:
             # Count newline characters
             return sum(buf.count(b"\n") for buf in iter(lambda: f.read(1 << 20), b""))
     except FileNotFoundError:
@@ -16,7 +16,7 @@ def count_tubes() -> int:
 
 def get_next_id() -> int:
     try:
-        with open(Tube.DATABASE_FILE_PATH, "rb") as f:
+        with open(Coil.DATABASE_FILE_PATH, "rb") as f:
             if f.seek(0, os.SEEK_END) == 0:  # empty
                 return 1
             # scan back to last line
@@ -33,47 +33,47 @@ def get_next_id() -> int:
 
 
 
-def read_all_tubes():
-    tubes = []
+def read_all_coils():
+    coils = []
     try:
-        with open(Tube.DATABASE_FILE_PATH, "r", encoding="utf-8") as f:
+        with open(Coil.DATABASE_FILE_PATH, "r", encoding="utf-8") as f:
             for line in f:
                 if line.strip():
-                    tubes.append(json.loads(line))
+                    coils.append(json.loads(line))
     except FileNotFoundError:
         pass
-    return tubes
+    return coils
 
 
-def delete_tube_by_id(tube_id: int) -> bool:
-    if not Tube.DATABASE_FILE_PATH.exists():
+def delete_coil_by_id(coil_id: int) -> bool:
+    if not Coil.DATABASE_FILE_PATH.exists():
         return False
 
     found = False
     lines_to_keep = []
 
-    with open(Tube.DATABASE_FILE_PATH, "r", encoding="utf-8") as f:
+    with open(Coil.DATABASE_FILE_PATH, "r", encoding="utf-8") as f:
         for line in f:
             if not line.strip():
                 continue
             record = json.loads(line)
-            if record.get("id") == tube_id:
+            if record.get("id") == coil_id:
                 found = True
                 continue  # skip adding this one
             lines_to_keep.append(line)
 
     if found:
-        with open(Tube.DATABASE_FILE_PATH, "w", encoding="utf-8") as f:
+        with open(Coil.DATABASE_FILE_PATH, "w", encoding="utf-8") as f:
             f.writelines(lines_to_keep)
 
     return found
 
 
-def get_tube_by_id(tube_id: int) -> Tube | None:
-    if not Tube.DATABASE_FILE_PATH.exists():
+def get_coil_by_id(coil_id: int) -> Coil | None:
+    if not Coil.DATABASE_FILE_PATH.exists():
         return None
 
-    with open(Tube.DATABASE_FILE_PATH, "r", encoding="utf-8") as f:
+    with open(Coil.DATABASE_FILE_PATH, "r", encoding="utf-8") as f:
         for line in f:
             s = line.strip()
             if not s:
@@ -82,27 +82,27 @@ def get_tube_by_id(tube_id: int) -> Tube | None:
                 record = json.loads(s)
             except json.JSONDecodeError:
                 continue
-            if record.get("id") == tube_id:
-                return Tube(tube_id=record["id"], length=record["length"])
+            if record.get("id") == coil_id:
+                return Coil(coil_id=record["id"], length=record["length"], force_applied=record["force_applied"])
     return None
 
 
 
-def update_tube_by_id(tube_id: int, new_length: float) -> Tube | None:
+def update_coil_by_id(coil_id: int, new_length: float, new_force_applied: float) -> Coil | None:
     """
-    Replace the record with id == tube_id. Returns the updated Tube or None if not found.
+    Replace the record with id == coil_id. Returns the updated Coil or None if not found.
     Uses an atomic write (temp file + replace) to avoid corruption.
     """
-    if not Tube.DATABASE_FILE_PATH.exists():
+    if not Coil.DATABASE_FILE_PATH.exists():
         return None
 
     found = False
     updated_record = None
 
-    Tube.DATABASE_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile("w", delete=False, dir=str(Tube.DATABASE_FILE_PATH.parent), encoding="utf-8") as tmp:
+    Coil.DATABASE_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.NamedTemporaryFile("w", delete=False, dir=str(Coil.DATABASE_FILE_PATH.parent), encoding="utf-8") as tmp:
         tmp_path = Path(tmp.name)
-        with open(Tube.DATABASE_FILE_PATH, "r", encoding="utf-8") as src:
+        with open(Coil.DATABASE_FILE_PATH, "r", encoding="utf-8") as src:
             for line in src:
                 s = line.strip()
                 if not s:
@@ -114,8 +114,9 @@ def update_tube_by_id(tube_id: int, new_length: float) -> Tube | None:
                     tmp.write(line)
                     continue
 
-                if rec.get("id") == tube_id:
+                if rec.get("id") == coil_id:
                     rec["length"] = new_length
+                    rec["force_applied"] = new_force_applied
                     found = True
                     updated_record = rec
 
@@ -129,7 +130,7 @@ def update_tube_by_id(tube_id: int, new_length: float) -> Tube | None:
             return None
 
     # atomic replace
-    os.replace(tmp_path, Tube.DATABASE_FILE_PATH)
+    os.replace(tmp_path, Coil.DATABASE_FILE_PATH)
 
     # Important: avoid re-saving when constructing the domain object
-    return Tube(tube_id=updated_record["id"], length=updated_record["length"])
+    return Coil(coil_id=updated_record["id"], length=updated_record["length"], force_applied=updated_record["force_applied"])

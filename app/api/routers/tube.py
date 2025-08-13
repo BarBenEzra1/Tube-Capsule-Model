@@ -6,7 +6,7 @@ from app.domain.services.tube_service import read_all_tubes, get_next_id, delete
 from app.domain.entities.tube import Tube
 
 
-router = APIRouter(prefix="/tubes", tags=["tubes"])
+router = APIRouter(prefix="/tubes", tags=["Tubes"])
 
 @router.post("/", response_model=dict, status_code=status.HTTP_201_CREATED)
 async def create_tube(tube: TubeCreate):
