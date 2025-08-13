@@ -129,5 +129,4 @@ def update_tube_by_id(tube_id: int, new_length: float) -> Tube | None:
     # atomic replace
     os.replace(tmp_path, Tube.DATABASE_FILE_PATH)
 
-    # Important: avoid re-saving when constructing the domain object
     return Tube(tube_id=updated_record["id"], length=updated_record["length"])

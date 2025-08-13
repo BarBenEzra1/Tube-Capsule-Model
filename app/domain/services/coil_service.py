@@ -130,5 +130,4 @@ def update_coil_by_id(coil_id: int, new_length: float, new_force_applied: float)
     # atomic replace
     os.replace(tmp_path, Coil.DATABASE_FILE_PATH)
 
-    # Important: avoid re-saving when constructing the domain object
     return Coil(coil_id=updated_record["id"], length=updated_record["length"], force_applied=updated_record["force_applied"])
