@@ -32,18 +32,27 @@ class System:
 
 
     def validate_coil_ids(self):
+        if not Coil.DATABASE_FILE_PATH.exists():
+            raise ValueError(f"Coil database file not found")
+
         for coil_id in self.coil_ids_to_positions.keys():
-            if not Coil.DATABASE_FILE_PATH.exists():
+            if not Coil.get_coil_by_id(coil_id):
                 raise ValueError(f"Coil with id {coil_id} not found")
 
 
     def validate_tube_id(self):
         if not Tube.DATABASE_FILE_PATH.exists():
+            raise ValueError(f"Tube database file not found")
+
+        if not Tube.get_tube_by_id(self.tube_id):
             raise ValueError(f"Tube with id {self.tube_id} not found")
     
 
     def validate_capsule_id(self):
         if not Capsule.DATABASE_FILE_PATH.exists():
+            raise ValueError(f"Capsule database file not found")
+
+        if not Capsule.get_capsule_by_id(self.capsule_id):
             raise ValueError(f"Capsule with id {self.capsule_id} not found")
     
 
@@ -51,8 +60,6 @@ class System:
         self.validate_coil_ids()
         self.validate_tube_id()
         self.validate_capsule_id()
-
-
 
 
     def __str__(self):
