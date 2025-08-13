@@ -1,9 +1,10 @@
 from fastapi import APIRouter, HTTPException, status
 
 from app.domain.schemas.coil_schemas import CoilCreate, CoilResponse, CoilsListResponse, CoilUpdate
-from app.domain.services.coil_service import read_all_coils, get_next_id, delete_coil_by_id, get_coil_by_id, update_coil_by_id
+from app.domain.services.coil_service import read_all_coils, delete_coil_by_id, get_coil_by_id, update_coil_by_id
 
 from app.domain.entities.coil import Coil
+from app.domain.utils.get_next_id import get_next_id
 
 
 router = APIRouter(prefix="/coils", tags=["Coils"])
@@ -12,7 +13,7 @@ router = APIRouter(prefix="/coils", tags=["Coils"])
 async def create_coil(coil: CoilCreate):
     """Create new coil entity"""
     
-    coil = Coil(coil_id=get_next_id(), length=coil.length, force_applied=coil.force_applied)
+    coil = Coil(coil_id=get_next_id(Coil.DATABASE_FILE_PATH), length=coil.length, force_applied=coil.force_applied)
 
     return {"id": coil.id}
 

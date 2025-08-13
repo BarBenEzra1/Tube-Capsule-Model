@@ -1,9 +1,10 @@
 from fastapi import APIRouter, HTTPException, status
 
 from app.domain.schemas.system_schemas import SystemCreate, SystemResponse, SystemsListResponse, SystemUpdate
-from app.domain.services.system_service import read_all_systems, get_next_id, delete_system_by_id, get_system_by_id, update_system_by_id
+from app.domain.services.system_service import read_all_systems, delete_system_by_id, get_system_by_id, update_system_by_id
 
 from app.domain.entities.system import System
+from app.domain.utils.get_next_id import get_next_id
 
 
 router = APIRouter(prefix="/systems", tags=["Systems"])
@@ -12,7 +13,7 @@ router = APIRouter(prefix="/systems", tags=["Systems"])
 async def create_system(system: SystemCreate):
     """Create new system entity"""
     
-    system = System(system_id=get_next_id(), tube_id=system.tube_id, coil_ids=system.coil_ids, capsule_id=system.capsule_id)
+    system = System(system_id=get_next_id(System.DATABASE_FILE_PATH), tube_id=system.tube_id, coil_ids=system.coil_ids, capsule_id=system.capsule_id)
 
     return {"id": system.id}
 

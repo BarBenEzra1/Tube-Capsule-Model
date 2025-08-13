@@ -1,9 +1,10 @@
 from fastapi import APIRouter, HTTPException, status
 
 from app.domain.schemas.capsule_schemas import CapsuleCreate, CapsuleResponse, CapsulesListResponse, CapsuleUpdate
-from app.domain.services.capsule_service import read_all_capsules, get_next_id, delete_capsule_by_id, get_capsule_by_id, update_capsule_by_id
+from app.domain.services.capsule_service import read_all_capsules, delete_capsule_by_id, get_capsule_by_id, update_capsule_by_id
 
 from app.domain.entities.capsule import Capsule
+from app.domain.utils.get_next_id import get_next_id
 
 
 router = APIRouter(prefix="/capsules", tags=["Capsules"])
@@ -12,7 +13,7 @@ router = APIRouter(prefix="/capsules", tags=["Capsules"])
 async def create_capsule(capsule: CapsuleCreate):
     """Create new capsule entity"""
     
-    capsule = Capsule(capsule_id=get_next_id(), mass=capsule.mass, initial_velocity=capsule.initial_velocity)
+    capsule = Capsule(capsule_id=get_next_id(Capsule.DATABASE_FILE_PATH), mass=capsule.mass, initial_velocity=capsule.initial_velocity)
 
     return {"id": capsule.id}
 

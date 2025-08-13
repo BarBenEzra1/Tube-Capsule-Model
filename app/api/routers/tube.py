@@ -1,9 +1,10 @@
 from fastapi import APIRouter, HTTPException, status
 
 from app.domain.schemas.tube_schemas import TubeCreate, TubeResponse, TubesListResponse, TubeUpdate
-from app.domain.services.tube_service import read_all_tubes, get_next_id, delete_tube_by_id, get_tube_by_id, update_tube_by_id
+from app.domain.services.tube_service import read_all_tubes, delete_tube_by_id, get_tube_by_id, update_tube_by_id
 
 from app.domain.entities.tube import Tube
+from app.domain.utils.get_next_id import get_next_id
 
 
 router = APIRouter(prefix="/tubes", tags=["Tubes"])
@@ -12,7 +13,7 @@ router = APIRouter(prefix="/tubes", tags=["Tubes"])
 async def create_tube(tube: TubeCreate):
     """Create new tube entity"""
     
-    tube = Tube(tube_id=get_next_id(), length=tube.length)
+    tube = Tube(tube_id=get_next_id(Tube.DATABASE_FILE_PATH), length=tube.length)
 
     return {"id": tube.id}
 

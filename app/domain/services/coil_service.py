@@ -4,33 +4,6 @@ from pathlib import Path
 import tempfile
 
 
-def count_coils() -> int:
-    try:
-        with open(Coil.DATABASE_FILE_PATH, "rb") as f:
-            # Count newline characters
-            return sum(buf.count(b"\n") for buf in iter(lambda: f.read(1 << 20), b""))
-    except FileNotFoundError:
-        return 0
-
-
-def get_next_id() -> int:
-    try:
-        with open(Coil.DATABASE_FILE_PATH, "rb") as f:
-            if f.seek(0, os.SEEK_END) == 0:  # empty
-                return 1
-            # scan back to last line
-            pos = -1
-            while -pos <= f.tell():
-                f.seek(pos, os.SEEK_END)
-                if f.read(1) == b"\n":
-                    break
-                pos -= 1
-            last = f.readline().decode("utf-8").strip()
-            return (json.loads(last)["id"] if last else 0) + 1
-    except FileNotFoundError:
-        return 1
-
-
 def read_all_coils():
     coils = []
     try:
