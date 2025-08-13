@@ -13,7 +13,7 @@ router = APIRouter(prefix="/systems", tags=["Systems"])
 async def create_system(system: SystemCreate):
     """Create new system entity"""
     
-    system = System(system_id=get_next_id(System.DATABASE_FILE_PATH), tube_id=system.tube_id, coil_ids=system.coil_ids, capsule_id=system.capsule_id)
+    system = System(system_id=get_next_id(System.DATABASE_FILE_PATH), tube_id=system.tube_id, coil_ids_to_positions=system.coil_ids_to_positions, capsule_id=system.capsule_id)
 
     return {"id": system.id}
 
@@ -28,7 +28,7 @@ async def get_system_by_id(system_id: int):
             detail="System not found"
         )
         
-    return SystemResponse(id=system.id, tube_id=system.tube_id, coil_ids=system.coil_ids, capsule_id=system.capsule_id)
+    return SystemResponse(id=system.id, tube_id=system.tube_id, coil_ids_to_positions=system.coil_ids_to_positions, capsule_id=system.capsule_id)
 
 
 @router.get("/", response_model=SystemsListResponse, status_code=status.HTTP_200_OK)
@@ -37,7 +37,7 @@ async def get_all_systems():
     systems_data = read_all_systems()  # returns list[dict]
     
     entities = [
-        SystemResponse(id=system["id"], tube_id=system["tube_id"], coil_ids=system["coil_ids"], capsule_id=system["capsule_id"])
+        SystemResponse(id=system["id"], tube_id=system["tube_id"], coil_ids_to_positions=system["coil_ids_to_positions"], capsule_id=system["capsule_id"])
         for system in systems_data
     ]
     
@@ -46,11 +46,11 @@ async def get_all_systems():
 @router.put("/{system_id}", status_code=status.HTTP_200_OK)
 async def update_system(system_id: int, system: SystemUpdate):
     """Update system (full replace)"""
-    updated = update_system_by_id(system_id=system_id, new_tube_id=system.tube_id, new_coil_ids=system.coil_ids, new_capsule_id=system.capsule_id)
+    updated = update_system_by_id(system_id=system_id, new_tube_id=system.tube_id, new_coil_ids=system.coil_ids_to_positions, new_capsule_id=system.capsule_id)
     if updated is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="System not found")
 
-    return SystemResponse(id=updated.id, tube_id=updated.tube_id, coil_ids=updated.coil_ids, capsule_id=updated.capsule_id)
+    return SystemResponse(id=updated.id, tube_id=updated.tube_id, coil_ids_to_positions=updated.coil_ids_to_positions, capsule_id=updated.capsule_id)
 
 
 @router.delete("/{system_id}", status_code=status.HTTP_204_NO_CONTENT)

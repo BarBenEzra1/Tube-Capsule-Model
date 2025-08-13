@@ -54,12 +54,12 @@ def get_system_by_id(system_id: int) -> System | None:
             except json.JSONDecodeError:
                 continue
             if record.get("id") == system_id:
-                return System(system_id=record["id"], tube_id=record["tube_id"], coil_ids=record["coil_ids"], capsule_id=record["capsule_id"])
+                return System(system_id=record["id"], tube_id=record["tube_id"], coil_ids_to_positions=record["coil_ids_to_positions"], capsule_id=record["capsule_id"])
     return None
 
 
 
-def update_system_by_id(system_id: int, new_tube_id: int, new_coil_ids: list[int], new_capsule_id: int) -> System | None:
+def update_system_by_id(system_id: int, new_tube_id: int, new_coil_ids_to_positions: dict[int, int], new_capsule_id: int) -> System | None:
     """
     Replace the record with id == system_id. Returns the updated System or None if not found.
     Uses an atomic write (temp file + replace) to avoid corruption.
@@ -87,7 +87,7 @@ def update_system_by_id(system_id: int, new_tube_id: int, new_coil_ids: list[int
 
                 if rec.get("id") == system_id:
                     rec["tube_id"] = new_tube_id
-                    rec["coil_ids"] = new_coil_ids
+                    rec["coil_ids_to_positions"] = new_coil_ids_to_positions
                     rec["capsule_id"] = new_capsule_id
                     found = True
                     updated_record = rec
@@ -104,4 +104,4 @@ def update_system_by_id(system_id: int, new_tube_id: int, new_coil_ids: list[int
     # atomic replace
     os.replace(tmp_path, System.DATABASE_FILE_PATH)
 
-    return System(system_id=updated_record["id"], tube_id=updated_record["tube_id"], coil_ids=updated_record["coil_ids"], capsule_id=updated_record["capsule_id"])
+    return System(system_id=updated_record["id"], tube_id=updated_record["tube_id"], coil_ids_to_positions=updated_record["coil_ids_to_positions"], capsule_id=updated_record["capsule_id"])
