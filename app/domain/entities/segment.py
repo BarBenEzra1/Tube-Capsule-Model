@@ -1,3 +1,7 @@
+import json
+from pathlib import Path
+
+
 class Segment:
     """
     Base class for segments in the tube-capsule system.
@@ -10,6 +14,8 @@ class Segment:
         starting_position (float): Starting position of the segment relative to the beginning of the tube, in meters
         related_coil_id (int, optional): ID of the coil associated with this segment. None for first segment.
     """
+
+    DATABASE_FILE_PATH = Path("app/data/segment.jsonl") 
     
     def __init__(self, segment_id: int, traverse_time: float, start_time: float, length: float, starting_position: float, related_coil_id: int = None):
         self.id = segment_id
@@ -18,7 +24,15 @@ class Segment:
         self.length = length
         self.starting_position = starting_position
         self.related_coil_id = related_coil_id
+        
+        self.save_to_file()
+
+
+    def save_to_file(self):
+        with open(self.DATABASE_FILE_PATH, "a", encoding="utf-8") as f:
+             f.write(json.dumps({"id": self.id, "traverse_time": self.traverse_time, "start_time": self.start_time, "length": self.length, "starting_position": self.starting_position, "related_coil_id": self.related_coil_id}) + "\n")
     
+
     def __str__(self):
         return f"Segment(id={self.id}, traverse_time={self.traverse_time}s, start_time={self.start_time}s, length={self.length}m, starting_position={self.starting_position}m, related_coil_id={self.related_coil_id})"
  
