@@ -13,7 +13,6 @@ def count_coils() -> int:
         return 0
 
 
-
 def get_next_id() -> int:
     try:
         with open(Coil.DATABASE_FILE_PATH, "rb") as f:
@@ -30,7 +29,6 @@ def get_next_id() -> int:
             return (json.loads(last)["id"] if last else 0) + 1
     except FileNotFoundError:
         return 1
-
 
 
 def read_all_coils():
