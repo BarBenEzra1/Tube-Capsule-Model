@@ -1,7 +1,14 @@
+from enum import Enum
 from app.domain.entities.system import System
 import os, json
 from pathlib import Path
 import tempfile
+
+
+class UpdateSystemStatus(Enum):
+    SUCCESS = "success"
+    INVALID_SYSTEM = "invalid_system"
+    NOT_FOUND = "not_found"
 
 
 def read_all_systems():
@@ -54,23 +61,30 @@ def get_system_by_id(system_id: int) -> System | None:
             except json.JSONDecodeError:
                 continue
             if record.get("id") == system_id:
-                return System(system_id=record["id"], tube_id=record["tube_id"], coil_ids_to_positions=record["coil_ids_to_positions"], capsule_id=record["capsule_id"])
+                return System(system_id=record["id"], tube_id=record["tube_id"], coil_ids_to_positions=record["coil_ids_to_positions"], capsule_id=record["capsule_id"], save_to_file=False)
     return None
 
 
-
-def update_system_by_id(system_id: int, new_tube_id: int, new_coil_ids_to_positions: dict[int, int], new_capsule_id: int) -> System | None:
+def update_system_by_id(system_id: int, new_tube_id: int, new_coil_ids_to_positions: dict[int, int], new_capsule_id: int) -> tuple[UpdateSystemStatus, str | None]:
     """
     Replace the record with id == system_id. Returns the updated System or None if not found.
     Uses an atomic write (temp file + replace) to avoid corruption.
     """
     if not System.DATABASE_FILE_PATH.exists():
-        return None
+        return UpdateSystemStatus.NOT_FOUND, None
 
     found = False
-    updated_record = None
 
-    System.DATABASE_FILE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    system = get_system_by_id(system_id)
+    if system is None:
+        return UpdateSystemStatus.NOT_FOUND, None
+    
+    new_system = System(system_id=system_id, tube_id=new_tube_id, coil_ids_to_positions=new_coil_ids_to_positions, capsule_id=new_capsule_id, save_to_file=False)
+    try:
+        new_system.is_system_valid()
+    except ValueError as e:
+        return UpdateSystemStatus.INVALID_SYSTEM, e.args[0]
+    
     with tempfile.NamedTemporaryFile("w", delete=False, dir=str(System.DATABASE_FILE_PATH.parent), encoding="utf-8") as tmp:
         tmp_path = Path(tmp.name)
         with open(System.DATABASE_FILE_PATH, "r", encoding="utf-8") as src:
@@ -90,7 +104,6 @@ def update_system_by_id(system_id: int, new_tube_id: int, new_coil_ids_to_positi
                     rec["coil_ids_to_positions"] = new_coil_ids_to_positions
                     rec["capsule_id"] = new_capsule_id
                     found = True
-                    updated_record = rec
 
                 tmp.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
@@ -99,9 +112,9 @@ def update_system_by_id(system_id: int, new_tube_id: int, new_coil_ids_to_positi
         try:
             tmp_path.unlink(missing_ok=True)
         finally:
-            return None
+            return UpdateSystemStatus.NOT_FOUND, None
 
     # atomic replace
     os.replace(tmp_path, System.DATABASE_FILE_PATH)
 
-    return System(system_id=updated_record["id"], tube_id=updated_record["tube_id"], coil_ids_to_positions=updated_record["coil_ids_to_positions"], capsule_id=updated_record["capsule_id"])
+    return UpdateSystemStatus.SUCCESS, None

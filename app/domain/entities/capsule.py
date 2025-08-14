@@ -13,12 +13,13 @@ class Capsule:
     DATABASE_FILE_PATH = Path("app/data/capsule.jsonl") 
 
 
-    def __init__(self, capsule_id: int, mass: float, initial_velocity: float):
+    def __init__(self, capsule_id: int, mass: float, initial_velocity: float, save_to_file: bool = True):
         self.id = capsule_id
         self.mass = mass
         self.initial_velocity = initial_velocity
 
-        self.save_to_file()
+        if save_to_file:
+            self.save_to_file()
 
 
     def save_to_file(self):

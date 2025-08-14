@@ -19,7 +19,7 @@ async def create_tube(tube: TubeCreate):
 
 
 @router.get("/{tube_id}", response_model=TubeResponse, status_code=status.HTTP_200_OK)
-async def get_tube_by_id(tube_id: int):
+async def get_tube(tube_id: int):
     """Get tube entity by id"""
     tube = get_tube_by_id(tube_id)
     if tube is None:

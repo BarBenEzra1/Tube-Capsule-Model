@@ -18,15 +18,15 @@ class System:
     
     DATABASE_FILE_PATH = Path("app/data/system.jsonl") 
 
-    def __init__(self, system_id: int, tube_id: int, coil_ids_to_positions: dict[int, int], capsule_id: int):
-        self.is_system_valid()
-
+    def __init__(self, system_id: int, tube_id: int, coil_ids_to_positions: dict[int, int], capsule_id: int, save_to_file: bool = True):
         self.id = system_id
         self.tube_id = tube_id
         self.coil_ids_to_positions = coil_ids_to_positions
         self.capsule_id = capsule_id
 
-        self.save_to_file()
+        if save_to_file:  # Only validate when creating new systems, not when loading existing ones
+            self.is_system_valid()
+            self.save_to_file()
     
 
     def save_to_file(self):
@@ -59,14 +59,9 @@ class System:
             raise ValueError(f"Capsule with id {self.capsule_id} not found")
     
 
-    def validate_coil_overlaps(self):
-        """
-        Validate that no coils overlap based on their position and length.
-        The position + length of one coil should not be within the position + length of another coil.
-        """
+    def get_coil_ranges(self):
         coil_ranges = []
         
-        # Collect all coil ranges (position to position + length)
         for coil_id, position in self.coil_ids_to_positions.items():
             coil = get_coil_by_id(coil_id)
             if coil:
@@ -74,24 +69,42 @@ class System:
                 end = position + coil.length
                 coil_ranges.append((coil_id, start, end))
         
-        # Check for overlaps between any two coils
-        for i in range(len(coil_ranges)):
-            for j in range(i + 1, len(coil_ranges)):
-                coil1_id, start1, end1 = coil_ranges[i]
-                coil2_id, start2, end2 = coil_ranges[j]
-                
-                # Check if coils overlap
-                # Two ranges overlap if one starts before the other ends and vice versa
-                if start1 < end2 and start2 < end1:
-                    raise ValueError(f"Coils {coil1_id} and {coil2_id} overlap. "
-                                   f"Coil {coil1_id} spans {start1}-{end1}, "
-                                   f"Coil {coil2_id} spans {start2}-{end2}")
+        coil_ranges.sort(key=lambda x: x[1])
+
+        return coil_ranges
+
+
+    def verify_coil_within_tube_range(self, coil_ranges):
+        tube = get_tube_by_id(self.tube_id)
+
+        for coil_range in coil_ranges:
+            if coil_range[2] > tube.length:
+                raise ValueError(f"Coil {coil_range[0]} is out of the tube range.")
+
+
+    def validate_coil_overlaps(self, coil_ranges):
+        """
+        Validate that no coils overlap based on their position and length.
+        The position + length of one coil should not be within the position + length of another coil.
+        """
+        for i in range(len(coil_ranges) - 1):
+            current_coil_range = coil_ranges[i]
+            next_coil_range = coil_ranges[i + 1]
+
+            if current_coil_range[2] > next_coil_range[1]:
+                raise ValueError(f"Coils {current_coil_range[0]} and {next_coil_range[0]} overlap. "
+                                   f"They can't be in the same system.")
+
 
     def is_system_valid(self):
         self.validate_coil_ids()
         self.validate_tube_id()
         self.validate_capsule_id()
-        self.validate_coil_overlaps()
+
+        coil_ranges = self.get_coil_ranges()
+
+        self.verify_coil_within_tube_range(coil_ranges)
+        self.validate_coil_overlaps(coil_ranges)
 
 
     def __str__(self):

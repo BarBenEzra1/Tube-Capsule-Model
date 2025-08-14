@@ -19,7 +19,7 @@ async def create_coil(coil: CoilCreate):
 
 
 @router.get("/{coil_id}", response_model=CoilResponse, status_code=status.HTTP_200_OK)
-async def get_coil_by_id(coil_id: int):
+async def get_coil(coil_id: int):
     """Get coil entity by id"""
     coil = get_coil_by_id(coil_id)
     if coil is None:

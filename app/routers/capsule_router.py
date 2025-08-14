@@ -19,7 +19,7 @@ async def create_capsule(capsule: CapsuleCreate):
 
 
 @router.get("/{capsule_id}", response_model=CapsuleResponse, status_code=status.HTTP_200_OK)
-async def get_capsule_by_id(capsule_id: int):
+async def get_capsule(capsule_id: int):
     """Get capsule entity by id"""
     capsule = get_capsule_by_id(capsule_id)
     if capsule is None:

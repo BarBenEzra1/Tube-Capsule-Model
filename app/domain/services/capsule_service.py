@@ -54,7 +54,7 @@ def get_capsule_by_id(capsule_id: int) -> Capsule | None:
             except json.JSONDecodeError:
                 continue
             if record.get("id") == capsule_id:
-                return Capsule(capsule_id=record["id"], mass=record["mass"], initial_velocity=record["initial_velocity"])
+                return Capsule(capsule_id=record["id"], mass=record["mass"], initial_velocity=record["initial_velocity"], save_to_file=False)
     return None
 
 
@@ -103,4 +103,4 @@ def update_capsule_by_id(capsule_id: int, new_mass: float, new_initial_velocity:
     # atomic replace
     os.replace(tmp_path, Capsule.DATABASE_FILE_PATH)
 
-    return Capsule(capsule_id=updated_record["id"], mass=updated_record["mass"], initial_velocity=updated_record["initial_velocity"])
+    return Capsule(capsule_id=updated_record["id"], mass=updated_record["mass"], initial_velocity=updated_record["initial_velocity"], save_to_file=False)

@@ -11,11 +11,12 @@ class Tube:
     
     DATABASE_FILE_PATH = Path("app/data/tube.jsonl") 
 
-    def __init__(self, tube_id: int, length: float):
+    def __init__(self, tube_id: int, length: float, save_to_file: bool = True):
         self.id = tube_id
         self.length = length
 
-        self.save_to_file()
+        if save_to_file:
+            self.save_to_file()
     
 
     def save_to_file(self):

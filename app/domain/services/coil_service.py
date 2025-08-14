@@ -54,7 +54,7 @@ def get_coil_by_id(coil_id: int) -> Coil | None:
             except json.JSONDecodeError:
                 continue
             if record.get("id") == coil_id:
-                return Coil(coil_id=record["id"], length=record["length"], force_applied=record["force_applied"])
+                return Coil(coil_id=record["id"], length=record["length"], force_applied=record["force_applied"], save_to_file=False)
     return None
 
 
@@ -103,4 +103,4 @@ def update_coil_by_id(coil_id: int, new_length: float, new_force_applied: float)
     # atomic replace
     os.replace(tmp_path, Coil.DATABASE_FILE_PATH)
 
-    return Coil(coil_id=updated_record["id"], length=updated_record["length"], force_applied=updated_record["force_applied"])
+    return Coil(coil_id=updated_record["id"], length=updated_record["length"], force_applied=updated_record["force_applied"], save_to_file=False)

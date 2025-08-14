@@ -14,12 +14,13 @@ class Coil:
 
     DATABASE_FILE_PATH = Path("app/data/coil.jsonl") 
 
-    def __init__(self, coil_id: int, length: float, force_applied: float):
+    def __init__(self, coil_id: int, length: float, force_applied: float, save_to_file: bool = True):
         self.id = coil_id
         self.length = length
         self.force_applied = force_applied
 
-        self.save_to_file()
+        if save_to_file:
+            self.save_to_file()
 
 
     def save_to_file(self):

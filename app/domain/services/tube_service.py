@@ -54,7 +54,7 @@ def get_tube_by_id(tube_id: int) -> Tube | None:
             except json.JSONDecodeError:
                 continue
             if record.get("id") == tube_id:
-                return Tube(tube_id=record["id"], length=record["length"])
+                return Tube(tube_id=record["id"], length=record["length"], save_to_file=False)
     return None
 
 
@@ -102,4 +102,4 @@ def update_tube_by_id(tube_id: int, new_length: float) -> Tube | None:
     # atomic replace
     os.replace(tmp_path, Tube.DATABASE_FILE_PATH)
 
-    return Tube(tube_id=updated_record["id"], length=updated_record["length"])
+    return Tube(tube_id=updated_record["id"], length=updated_record["length"], save_to_file=False)
