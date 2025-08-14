@@ -1,5 +1,6 @@
 import math
 
+
 def get_traverse_time_for_constant_velocity(velocity: float, length: float) -> float:
     return length / velocity
 

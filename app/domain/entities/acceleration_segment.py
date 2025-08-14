@@ -1,4 +1,4 @@
-from segment import Segment
+from app.domain.entities.segment import Segment
 
 
 class AccelerationSegment(Segment):
@@ -15,13 +15,16 @@ class AccelerationSegment(Segment):
         start_velocity (float): Velocity of the capsule at the start of the segment, in m/s
         final_velocity (float): Velocity of the capsule at the end of the segment, in m/s
         acceleration (float): Constant acceleration of the capsule in this segment, in m/s²
+        energy_consumed (float): Energy consumed by the capsule in this segment, in Joules
     """
     
-    def __init__(self, segment_id: int, traverse_time: float, start_time: float, length: float, starting_position: float, start_velocity: float, final_velocity: float, acceleration: float, related_coil_id: int = None):
+    def __init__(self, segment_id: int, traverse_time: float, start_time: float, length: float, starting_position: float, start_velocity: float, final_velocity: float, acceleration: float, energy_consumed: float, related_coil_id: int = None):
         super().__init__(segment_id, traverse_time, start_time, length, starting_position, related_coil_id)
         self.acceleration = acceleration
         self.start_velocity = start_velocity
         self.final_velocity = final_velocity
+        self.energy_consumed = energy_consumed
     
+
     def __str__(self):
-        return f"AccelerationSegment(id={self.id}, traverse_time={self.traverse_time}s, start_time={self.start_time}s, length={self.length}m, starting_position={self.starting_position}m, start_velocity={self.start_velocity}m/s, final_velocity={self.final_velocity}m/s, acceleration={self.acceleration}m/s²)"
+        return f"AccelerationSegment(id={self.id}, traverse_time={self.traverse_time}s, start_time={self.start_time}s, length={self.length}m, starting_position={self.starting_position}m, start_velocity={self.start_velocity}m/s, final_velocity={self.final_velocity}m/s, acceleration={self.acceleration}m/s², energy_consumed={self.energy_consumed}J)"

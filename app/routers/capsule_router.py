@@ -1,8 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
-
 from app.domain.schemas.capsule_schemas import CapsuleCreate, CapsuleResponse, CapsulesListResponse, CapsuleUpdate
 from app.domain.services.capsule_service import read_all_capsules, delete_capsule_by_id, get_capsule_by_id, update_capsule_by_id
-
 from app.domain.entities.capsule import Capsule
 from app.domain.utils.get_next_id import get_next_id
 
@@ -42,6 +40,7 @@ async def get_all_capsules():
     ]
     
     return CapsulesListResponse(entities=entities)
+
 
 @router.put("/{capsule_id}", status_code=status.HTTP_200_OK)
 async def update_capsule(capsule_id: int, capsule: CapsuleUpdate):

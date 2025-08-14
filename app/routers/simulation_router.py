@@ -1,5 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
-
+from fastapi import APIRouter, status
 from app.domain.schemas.simulation_schemas import SimulationRequest, SimulationResponse
 from app.domain.services.simulation_service import run_simulation_by_system_id
 

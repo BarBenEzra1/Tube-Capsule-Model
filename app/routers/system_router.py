@@ -1,23 +1,12 @@
 from fastapi import APIRouter, HTTPException, status
-
-from app.domain.schemas.system_schemas import SystemCreate, SystemResponse, SystemsListResponse, SystemUpdate, CoilPosition
+from app.domain.schemas.system_schemas import SystemCreate, SystemResponse, SystemsListResponse, SystemUpdate
 from app.domain.services.system_service import UpdateSystemStatus, read_all_systems, delete_system_by_id, get_system_by_id, update_system_by_id
-
 from app.domain.entities.system import System
 from app.domain.utils.get_next_id import get_next_id
+from app.domain.services.coil_service import convert_coil_positions_to_dict, convert_dict_to_coil_positions
 
 
 router = APIRouter(prefix="/systems", tags=["Systems"])
-
-
-def convert_coil_positions_to_dict(coil_positions: list[CoilPosition]) -> dict[int, int]:
-    """Convert list of CoilPosition objects to dictionary format expected by System entity"""
-    return {cp.coilId: cp.position for cp in coil_positions}
-
-
-def convert_dict_to_coil_positions(coil_dict: dict[int, int]) -> list[CoilPosition]:
-    """Convert dictionary format to list of CoilPosition objects for API responses"""
-    return [CoilPosition(coilId=coil_id, position=position) for coil_id, position in coil_dict.items()]
 
 
 @router.post("/", response_model=dict, status_code=status.HTTP_201_CREATED)

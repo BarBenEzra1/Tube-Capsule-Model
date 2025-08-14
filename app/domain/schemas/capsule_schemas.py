@@ -5,6 +5,7 @@ class CapsuleCreate(BaseModel):
     mass: float = Field(gt=0, description="Mass must be positive")
     initial_velocity: float = Field(gt=0, description="Initial velocity must be positive")
 
+
 class CapsuleResponse(BaseModel):
     id: int
     mass: float

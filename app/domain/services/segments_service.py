@@ -3,15 +3,9 @@ from app.domain.entities.system import System
 from app.domain.services.capsule_service import get_capsule_by_id
 from app.domain.services.system_service import get_system_coils
 from app.domain.entities.coil import Coil
+from app.domain.entities.systemCoil import SystemCoil
 from app.domain.services.tube_service import get_tube_by_id
 from app.domain.utils.segments_utils import run_first_segment, get_constant_velocity_segment_followed_by_acceleration, get_acceleration_segment
-from pathlib import Path
-
-class SystemCoil:
-    def __init__(self, coil_id: int, position: int, coil: Coil):
-        self.coil_id = coil_id
-        self.position = position
-        self.coil = coil
 
 
 # First segment starts at 0 and ends at the middle of the first coil
@@ -31,6 +25,7 @@ def run_segments_simulation(system: System) -> list[Segment]:
         tube = get_tube_by_id(system.tube_id)
 
         segments = []
+        
         first_segment = run_first_segment(system_coils, capsule, tube)
         segments.append(first_segment)
 

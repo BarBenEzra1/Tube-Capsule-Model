@@ -3,6 +3,8 @@ import os, json
 from pathlib import Path
 import tempfile
 
+from app.domain.schemas.system_schemas import CoilPosition
+
 
 def read_all_coils():
     coils = []
@@ -58,7 +60,6 @@ def get_coil_by_id(coil_id: int) -> Coil | None:
     return None
 
 
-
 def update_coil_by_id(coil_id: int, new_length: float, new_force_applied: float) -> Coil | None:
     """
     Replace the record with id == coil_id. Returns the updated Coil or None if not found.
@@ -104,3 +105,13 @@ def update_coil_by_id(coil_id: int, new_length: float, new_force_applied: float)
     os.replace(tmp_path, Coil.DATABASE_FILE_PATH)
 
     return Coil(coil_id=updated_record["id"], length=updated_record["length"], force_applied=updated_record["force_applied"], save_to_file=False)
+
+
+def convert_coil_positions_to_dict(coil_positions: list[CoilPosition]) -> dict[int, int]:
+    """Convert list of CoilPosition objects to dictionary format expected by System entity"""
+    return {cp.coilId: cp.position for cp in coil_positions}
+
+
+def convert_dict_to_coil_positions(coil_dict: dict[int, int]) -> list[CoilPosition]:
+    """Convert dictionary format to list of CoilPosition objects for API responses"""
+    return [CoilPosition(coilId=coil_id, position=position) for coil_id, position in coil_dict.items()]

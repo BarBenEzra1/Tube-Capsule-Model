@@ -26,7 +26,7 @@ class Coil:
     def save_to_file(self):
         with open(self.DATABASE_FILE_PATH, "a", encoding="utf-8") as f:
              f.write(json.dumps({"id": self.id, "length": self.length, "force_applied": self.force_applied}) + "\n")
-    
+
 
     def __str__(self):
         return f"Coil(id={self.id}, length={self.length}m, force={self.force_applied}N)"

@@ -2,7 +2,7 @@ from app.domain.entities.acceleration_segment import AccelerationSegment
 from app.domain.entities.capsule import Capsule
 from app.domain.entities.constant_velocity_segment import ConstantVelocitySegment
 from app.domain.entities.tube import Tube
-from app.domain.services.segments_service import SystemCoil
+from app.domain.entities.systemCoil import SystemCoil
 from app.domain.utils.physics_utils import get_traverse_time_for_constant_velocity, get_acceleration, get_final_velocity, get_traverse_time_for_acceleration
 from app.domain.services.log import log
 
@@ -86,9 +86,11 @@ def get_acceleration_segment(
     acceleration_segment_length = end_coil_position - middle_coil_position
     final_velocity = get_final_velocity(current_velocity, acceleration, acceleration_segment_length)
     traverse_time = get_traverse_time_for_acceleration(current_velocity, final_velocity, acceleration)
+    energy_consumed = system_coil.coil.force_applied * acceleration_segment_length
 
     log(time_so_far, "coil_midpoint_accel", coil_id=system_coil.coil_id, start_velocity_mps=current_velocity, acceleration_mps2=acceleration, force_applied_N=system_coil.coil.force_applied)
     log(time_so_far + traverse_time, "coil_exit", coil_id=system_coil.coil_id, final_velocity_mps=final_velocity, acceleration_duration_s=traverse_time, acceleration_segment_length_m=acceleration_segment_length)
+    log(energy_consumed, "energy_consumed", coil_id=system_coil.coil_id, energy_consumed_J=energy_consumed)
 
     acceleration_segment = AccelerationSegment(
         id=segment_id,
@@ -99,7 +101,8 @@ def get_acceleration_segment(
         start_velocity=current_velocity,
         final_velocity=final_velocity,
         acceleration=acceleration,
-        traverse_time=traverse_time
+        traverse_time=traverse_time,
+        energy_consumed=energy_consumed
     )
 
     return acceleration_segment

@@ -1,4 +1,4 @@
-from segment import Segment
+from app.domain.entities.segment import Segment
 
 
 class ConstantVelocitySegment(Segment):
@@ -19,5 +19,6 @@ class ConstantVelocitySegment(Segment):
         super().__init__(segment_id, traverse_time, start_time, length, starting_position, related_coil_id)
         self.velocity = velocity
     
+
     def __str__(self):
         return f"ConstantVelocitySegment(id={self.id}, traverse_time={self.traverse_time}s, start_time={self.start_time}s, length={self.length}m, starting_position={self.starting_position}m, velocity={self.velocity}m/s)"

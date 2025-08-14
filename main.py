@@ -1,9 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.routers.tube import router as tube_router
-from app.api.routers.coil import router as coil_router
-from app.api.routers.capsule import router as capsule_router
-from app.api.routers.system import router as system_router
+
+from app.routers.simulation_router import router as simulation_router
+from app.routers.system_router import router as system_router
+from app.routers.tube_router import router as tube_router
+from app.routers.coil_router import router as coil_router
+from app.routers.capsule_router import router as capsule_router
 
 app = FastAPI(
     title="Tube Capsule Model API",
@@ -26,6 +28,7 @@ app.include_router(tube_router)
 app.include_router(coil_router)
 app.include_router(capsule_router)
 app.include_router(system_router)
+app.include_router(simulation_router)
 
 if __name__ == "__main__":
     import uvicorn

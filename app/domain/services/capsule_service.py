@@ -58,7 +58,6 @@ def get_capsule_by_id(capsule_id: int) -> Capsule | None:
     return None
 
 
-
 def update_capsule_by_id(capsule_id: int, new_mass: float, new_initial_velocity: float) -> Capsule | None:
     """
     Replace the record with id == capsule_id. Returns the updated Capsule or None if not found.

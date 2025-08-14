@@ -30,7 +30,7 @@ class Segment:
     def save_to_file(self):
         with open(self.DATABASE_FILE_PATH, "a", encoding="utf-8") as f:
              f.write(json.dumps({"id": self.id, "traverse_time": self.traverse_time, "start_time": self.start_time, "length": self.length, "starting_position": self.starting_position, "related_coil_id": self.related_coil_id}) + "\n")
-    
+
 
     def __str__(self):
         return f"Segment(id={self.id}, traverse_time={self.traverse_time}s, start_time={self.start_time}s, length={self.length}m, starting_position={self.starting_position}m, related_coil_id={self.related_coil_id})"
