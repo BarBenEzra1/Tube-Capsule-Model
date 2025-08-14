@@ -5,6 +5,8 @@ from pathlib import Path
 import tempfile
 from app.domain.entities.coil import Coil
 from app.domain.services.coil_service import get_coil_by_id
+from app.domain.services.tube_service import get_tube_by_id
+from app.domain.services.capsule_service import get_capsule_by_id
 
 
 class UpdateSystemStatus(Enum):
@@ -19,7 +21,10 @@ def read_all_systems():
         with open(System.DATABASE_FILE_PATH, "r", encoding="utf-8") as f:
             for line in f:
                 if line.strip():
-                    systems.append(json.loads(line))
+                    record = json.loads(line)
+                    # Convert string keys to integers for coil_ids_to_positions
+                    record["coil_ids_to_positions"] = {int(k): v for k, v in record["coil_ids_to_positions"].items()}
+                    systems.append(record)
     except FileNotFoundError:
         pass
     return systems
@@ -63,7 +68,9 @@ def get_system_by_id(system_id: int) -> System | None:
             except json.JSONDecodeError:
                 continue
             if record.get("id") == system_id:
-                return System(system_id=record["id"], tube_id=record["tube_id"], coil_ids_to_positions=record["coil_ids_to_positions"], capsule_id=record["capsule_id"], save_to_file=False)
+                # Convert string keys to integers for coil_ids_to_positions
+                coil_ids_to_positions = {int(k): v for k, v in record["coil_ids_to_positions"].items()}
+                return System(system_id=record["id"], tube_id=record["tube_id"], coil_ids_to_positions=coil_ids_to_positions, capsule_id=record["capsule_id"], save_to_file=False)
     return None
 
 
@@ -124,7 +131,7 @@ def update_system_by_id(system_id: int, new_tube_id: int, new_coil_ids_to_positi
 
 def get_system_coils(system: System) -> dict[int, Coil]:
     coils = {}
-
+    
     for coil_id in system.coil_ids_to_positions.keys():
         coil = get_coil_by_id(coil_id)
         

@@ -12,7 +12,7 @@ class Coil:
         force_applied (float): Force applied by the coil in Newtons
     """
 
-    DATABASE_FILE_PATH = Path("app/data/coil.jsonl") 
+    DATABASE_FILE_PATH = Path(__file__).parent.parent.parent / "data" / "coil.jsonl" 
 
     def __init__(self, coil_id: int, length: float, force_applied: float, save_to_file: bool = True):
         self.id = coil_id

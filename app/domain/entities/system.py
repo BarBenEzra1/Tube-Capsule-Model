@@ -16,7 +16,7 @@ class System:
         capsule_id (int): ID of the capsule
     """
     
-    DATABASE_FILE_PATH = Path("app/data/system.jsonl") 
+    DATABASE_FILE_PATH = Path(__file__).parent.parent.parent / "data" / "system.jsonl" 
 
     def __init__(self, system_id: int, tube_id: int, coil_ids_to_positions: dict[int, int], capsule_id: int, save_to_file: bool = True):
         self.id = system_id

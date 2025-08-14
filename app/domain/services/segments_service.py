@@ -6,7 +6,7 @@ from app.domain.entities.coil import Coil
 from app.domain.entities.systemCoil import SystemCoil
 from app.domain.services.tube_service import get_tube_by_id
 from app.domain.utils.segments_utils import run_first_segment, get_constant_velocity_segment_followed_by_acceleration, get_acceleration_segment
-
+from app.domain.services.log_service import LOG_FILE_PATH
 
 # First segment starts at 0 and ends at the middle of the first coil
 # Every coil contributes 2 segments:
@@ -69,7 +69,7 @@ def run_segments_simulation(system: System) -> list[Segment]:
 
 
 def get_system_coils_by_asc_position(system: System) -> list[SystemCoil]:
-    system_coils_by_asc_position = sorted(system.coil_ids_to_positions.items(), key=lambda x: x[1])
+    system_coils_by_asc_position = dict(sorted(system.coil_ids_to_positions.items(), key=lambda x: x[1]))
     coils: dict[int, Coil] = get_system_coils(system)
 
-    return [SystemCoil(coil_id=coil_id, position=position, coil=coils[coil_id]) for coil_id, position in system_coils_by_asc_position]
+    return [SystemCoil(coil_id=coil_id, position=position, coil=coils[coil_id]) for coil_id, position in system_coils_by_asc_position.items()]
