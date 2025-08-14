@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 class CoilPosition(BaseModel):
     coilId: int = Field(gt=0, description="Valid coil ID")
-    position: int = Field(ge=0, description="Position in the tube (must be non-negative)")
+    position: float = Field(ge=0, description="Position in the tube (must be non-negative)")
 
 
 class SystemCreate(BaseModel):

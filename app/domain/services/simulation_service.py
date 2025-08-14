@@ -1,5 +1,6 @@
 import os
-from app.domain.services.log_service import LOG_FILE_PATH
+import json
+from app.domain.services.log_service import LOG_FILE_PATH, LOG_JSON_FILE_PATH
 from app.domain.services.segments_service import run_segments_simulation
 from app.domain.services.system_service import get_system_by_id, get_system_coils
 from app.domain.services.tube_service import get_tube_by_id
@@ -16,6 +17,7 @@ def run_simulation_by_system_id(system_id: int) -> SimulationResponse:
         return SimulationResponse(success=False, error=SimulationError(system_id=system_id, error_message="System not found", error_code="SYSTEM_NOT_FOUND"))
     
     os.makedirs(LOG_FILE_PATH.parent, exist_ok=True)
+    os.makedirs(LOG_JSON_FILE_PATH.parent, exist_ok=True)
 
     # Write the title and system details BEFORE starting simulation
     with open(LOG_FILE_PATH, "a", encoding="utf-8") as f:
@@ -56,6 +58,9 @@ def run_simulation_by_system_id(system_id: int) -> SimulationResponse:
         for segment in segments
     ]
 
+    with open(LOG_JSON_FILE_PATH, "r", encoding="utf-8") as f:
+        coil_engagement_logs = [json.loads(line) for line in f]
+
     simulation_result = SimulationResult(
         system_id=system_id,
         total_travel_time=sum(segment.traverse_time for segment in segments),
@@ -64,6 +69,7 @@ def run_simulation_by_system_id(system_id: int) -> SimulationResponse:
         position_vs_time_trajectory=position_vs_time_trajectory,
         velocity_vs_time_trajectory=velocity_vs_time_trajectory,
         acceleration_vs_time_trajectory=acceleration_vs_time_trajectory,
+        coil_engagement_logs=coil_engagement_logs,
     )
 
     return SimulationResponse(success=True, result=simulation_result)

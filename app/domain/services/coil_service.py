@@ -107,11 +107,11 @@ def update_coil_by_id(coil_id: int, new_length: float, new_force_applied: float)
     return Coil(coil_id=updated_record["id"], length=updated_record["length"], force_applied=updated_record["force_applied"], save_to_file=False)
 
 
-def convert_coil_positions_to_dict(coil_positions: list[CoilPosition]) -> dict[int, int]:
+def convert_coil_positions_to_dict(coil_positions: list[CoilPosition]) -> dict[int, float]:
     """Convert list of CoilPosition objects to dictionary format expected by System entity"""
     return {cp.coilId: cp.position for cp in coil_positions}
 
 
-def convert_dict_to_coil_positions(coil_dict: dict[int, int]) -> list[CoilPosition]:
+def convert_dict_to_coil_positions(coil_dict: dict[int, float]) -> list[CoilPosition]:
     """Convert dictionary format to list of CoilPosition objects for API responses"""
     return [CoilPosition(coilId=coil_id, position=position) for coil_id, position in coil_dict.items()]

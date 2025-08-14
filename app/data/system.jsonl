@@ -1,1 +1,2 @@
 {"id": 1, "tube_id": 1, "coil_ids_to_positions": {"1": 30, "2": 65}, "capsule_id": 1}
+{"id": 2, "tube_id": 3, "coil_ids_to_positions": {"3": 0.5, "4": 1.0, "5": 1.4, "6": 2.0, "7": 3.0, "8": 4.0}, "capsule_id": 3}

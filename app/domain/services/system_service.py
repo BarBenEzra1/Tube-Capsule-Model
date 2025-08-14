@@ -72,7 +72,7 @@ def get_system_by_id(system_id: int) -> System | None:
     return None
 
 
-def update_system_by_id(system_id: int, new_tube_id: int, new_coil_ids_to_positions: dict[int, int], new_capsule_id: int) -> tuple[UpdateSystemStatus, str | None]:
+def update_system_by_id(system_id: int, new_tube_id: int, new_coil_ids_to_positions: dict[int, float], new_capsule_id: int) -> tuple[UpdateSystemStatus, str | None]:
     """
     Replace the record with id == system_id. Returns the updated System or None if not found.
     Uses an atomic write (temp file + replace) to avoid corruption.

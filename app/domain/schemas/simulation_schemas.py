@@ -29,6 +29,7 @@ class SimulationResult(BaseModel):
     position_vs_time_trajectory: List[PositionVsTimePoint] = Field(description="Capsule position vs time trajectory")
     velocity_vs_time_trajectory: List[VelocityVsTimePoint] = Field(description="Capsule velocity vs time trajectory")
     acceleration_vs_time_trajectory: List[AccelerationVsTimePoint] = Field(description="Capsule acceleration vs time trajectory")
+    coil_engagement_logs: list[dict[str, float | int | str]] = Field(description="Logs of coil engagement")
 
 
 class SimulationError(BaseModel):

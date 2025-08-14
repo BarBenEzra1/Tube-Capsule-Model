@@ -23,7 +23,7 @@ def run_first_segment(system_coils: list[SystemCoil], capsule: Capsule, tube: Tu
     else:
         first_coil = system_coils[0]
         first_coil_id = first_coil.coil_id
-        first_coil_middle_position = first_coil.position + first_coil.coil.length / 2
+        first_coil_middle_position = first_coil.position + round(first_coil.coil.length / 2, 6)
 
         time_to_reach_first_coil = get_traverse_time_for_constant_velocity(capsule.initial_velocity, first_coil.position)
         
@@ -40,29 +40,21 @@ def run_first_segment(system_coils: list[SystemCoil], capsule: Capsule, tube: Tu
             )
 
 
-def get_constant_velocity_segment_followed_by_acceleration(
+def run_constant_velocity_segment_followed_by_acceleration(
     acceleration_coil: SystemCoil, 
     next_coil: SystemCoil | None,
     tube: Tube,
     current_velocity: float,
     time_so_far: float,
     segment_id: int
-) -> ConstantVelocitySegment:
+    ) -> ConstantVelocitySegment:
     prev_coil_end_position = acceleration_coil.position + acceleration_coil.coil.length
     seg_len = (
-        next_coil.position + next_coil.coil.length / 2 - prev_coil_end_position
+        next_coil.position + round(next_coil.coil.length / 2, 6) - prev_coil_end_position
         if next_coil is not None
         else tube.length - prev_coil_end_position
     )
     traverse_time = get_traverse_time_for_constant_velocity(current_velocity, seg_len)
-
-    if next_coil is not None:
-        dist_to_next_coil = next_coil.position - prev_coil_end_position
-        time_to_reach_next_coil = get_traverse_time_for_constant_velocity(current_velocity, dist_to_next_coil)
-        log(time_so_far + time_to_reach_next_coil, "coil_enter", coil_id=next_coil.coil_id, pos_start_m=next_coil.position, entry_velocity_mps=current_velocity)
-    else:
-        log(time_so_far + traverse_time, "run_end", coil_id=acceleration_coil.coil_id, pos_start_m=prev_coil_end_position, final_velocity_mps=current_velocity, tube_length_m=tube.length)
-
 
     constant_velocity_segment = ConstantVelocitySegment(
         segment_id=segment_id,
@@ -74,21 +66,38 @@ def get_constant_velocity_segment_followed_by_acceleration(
         velocity=current_velocity,
     )
 
+    if next_coil is not None:
+        dist_to_next_coil = next_coil.position - prev_coil_end_position
+        time_to_reach_next_coil = get_traverse_time_for_constant_velocity(current_velocity, dist_to_next_coil)
+        log(time_so_far + time_to_reach_next_coil, "coil_enter", coil_id=next_coil.coil_id, pos_start_m=next_coil.position, entry_velocity_mps=current_velocity)
+    else:
+        log(time_so_far + traverse_time, "run_end", coil_id=acceleration_coil.coil_id, pos_start_m=prev_coil_end_position, final_velocity_mps=current_velocity, tube_length_m=tube.length)
+
+        constant_velocity_segment = ConstantVelocitySegment(
+            segment_id=segment_id + 1,
+            traverse_time=time_so_far + traverse_time,
+            start_time=time_so_far + traverse_time,
+            length=tube.length,
+            starting_position=tube.length,
+            related_coil_id=None,
+            velocity=current_velocity,
+        )
+
     return constant_velocity_segment
 
 
-def get_acceleration_segment(
+def run_acceleration_segment(
     system_coil: SystemCoil, 
     capsule: Capsule,
     current_velocity: float,
     time_so_far: float,
     segment_id: int
-) -> AccelerationSegment:
-    middle_coil_position = system_coil.position + system_coil.coil.length / 2
+    ) -> AccelerationSegment:
+    middle_coil_position = system_coil.position + round(system_coil.coil.length / 2, 6)
     end_coil_position = system_coil.position + system_coil.coil.length
 
     acceleration = get_acceleration(system_coil.coil.force_applied, capsule.mass)
-    acceleration_segment_length = end_coil_position - middle_coil_position
+    acceleration_segment_length = round((end_coil_position - system_coil.position) / 2, 6)
     final_velocity = get_final_velocity(current_velocity, acceleration, acceleration_segment_length)
     traverse_time = get_traverse_time_for_acceleration(current_velocity, final_velocity, acceleration)
     energy_consumed = system_coil.coil.force_applied * acceleration_segment_length

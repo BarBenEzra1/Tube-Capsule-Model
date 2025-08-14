@@ -12,13 +12,13 @@ class System:
     Attributes:
         id (int): Unique identifier for the system
         tube_id (int): ID of the tube
-        coil_ids_to_positions (dict[int, int]): IDs of the coils to their positions in the tube
+        coil_ids_to_positions (dict[int, float]): IDs of the coils to their positions in the tube
         capsule_id (int): ID of the capsule
     """
     
     DATABASE_FILE_PATH = Path(__file__).parent.parent.parent / "data" / "system.jsonl" 
 
-    def __init__(self, system_id: int, tube_id: int, coil_ids_to_positions: dict[int, int], capsule_id: int, save_to_file: bool = True):
+    def __init__(self, system_id: int, tube_id: int, coil_ids_to_positions: dict[int, float], capsule_id: int, save_to_file: bool = True):
         self.id = system_id
         self.tube_id = tube_id
         self.coil_ids_to_positions = coil_ids_to_positions
