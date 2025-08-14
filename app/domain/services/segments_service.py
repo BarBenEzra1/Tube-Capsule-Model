@@ -6,7 +6,6 @@ from app.domain.entities.coil import Coil
 from app.domain.entities.systemCoil import SystemCoil
 from app.domain.services.tube_service import get_tube_by_id
 from app.domain.utils.segments_utils import run_first_segment, get_constant_velocity_segment_followed_by_acceleration, get_acceleration_segment
-from app.domain.services.log_service import LOG_FILE_PATH
 
 # First segment starts at 0 and ends at the middle of the first coil
 # Every coil contributes 2 segments:

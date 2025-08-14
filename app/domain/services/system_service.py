@@ -5,8 +5,6 @@ from pathlib import Path
 import tempfile
 from app.domain.entities.coil import Coil
 from app.domain.services.coil_service import get_coil_by_id
-from app.domain.services.tube_service import get_tube_by_id
-from app.domain.services.capsule_service import get_capsule_by_id
 
 
 class UpdateSystemStatus(Enum):
