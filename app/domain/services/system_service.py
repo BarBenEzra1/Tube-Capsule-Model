@@ -3,6 +3,8 @@ from app.domain.entities.system import System
 import os, json
 from pathlib import Path
 import tempfile
+from app.domain.entities.coil import Coil
+from app.domain.services.coil_service import get_coil_by_id
 
 
 class UpdateSystemStatus(Enum):
@@ -118,3 +120,15 @@ def update_system_by_id(system_id: int, new_tube_id: int, new_coil_ids_to_positi
     os.replace(tmp_path, System.DATABASE_FILE_PATH)
 
     return UpdateSystemStatus.SUCCESS, None
+
+
+def get_system_coils(system: System) -> dict[int, Coil]:
+    coils = {}
+
+    for coil_id in system.coil_ids_to_positions.keys():
+        coil = get_coil_by_id(coil_id)
+        
+        if coil:
+            coils[coil_id] = coil
+        
+    return coils

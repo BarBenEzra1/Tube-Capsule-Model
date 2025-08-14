@@ -24,7 +24,6 @@ class Segment:
         self.length = length
         self.starting_position = starting_position
         self.related_coil_id = related_coil_id
-        
         self.save_to_file()
 
 
