@@ -47,7 +47,9 @@ If the tube contains no coils, it is treated as a single constant velocity segme
 For tubes with coils, the segmentation follows this pattern:
 1.	First segment (constant velocity): From the tube's beginning (position 0) to the midpoint of the first coil.
 2.	For each coil, two segments are created:
+
     •	Acceleration segment: From the coil's midpoint to the coil's end, where the capsule accelerates due to the coil's force.
+    
     •	Constant velocity segment: From the coil’s end to either the midpoint of the next coil (if it exists) or to the tube’s end (for the last coil).
 
 ![Diagram](docs/system_segments.png)
