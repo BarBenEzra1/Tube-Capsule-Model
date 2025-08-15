@@ -22,13 +22,36 @@ This project provides a FastAPI-based REST API for creating, managing, and simul
 - **System**: Combines a tube, capsule, and positioned coils into a complete transport system
 - **Segments**: Individual simulation segments representing different phases of capsule movement
 
-### Physics Model
+![Diagram](docs/system_components_diagram.png)
 
-The simulation divides capsule movement into discrete segments:
+### Model Behavior
 
-1. **Initial Segment**: Constant velocity movement from tube start to first coil
-2. **Acceleration Segments**: Force application within coil influence zones
-3. **Constant Velocity Segments**: Coasting between coils at achieved velocity
+1. The simulation is 1D
+2. Acceleration starts at the midpoint of a coil and continues until its end
+3. Capsule moves at constant velocity outside coils
+4. Coils apply constant force
+5. One capsule per simulation run
+6. Ignoring friction (coil force is the only force applied)
+7. Assuming a single user issues only one API request at a time.
+
+### Simulation Flow
+
+Capsule starts at the tube entrance at t0 = 0 and moves left to right at its initial constant velocity.
+Capsule passes through coils in order of their positions.
+Upon reaching a coil’s center, the coil’s configured force is applied on the capsule, causing acceleration.
+Acceleration continues until the capsule exits the coil.
+After exiting, it maintains the velocity reached at that moment until the next coil or the end of the tube.
+
+The simulation divides capsule movement into discrete segments.
+If the tube contains no coils, it is treated as a single constant velocity segment from start to end.
+For tubes with coils, the segmentation follows this pattern:
+1.	First segment (constant velocity): From the tube's beginning (position 0) to the midpoint of the first coil.
+2.	For each coil, two segments are created:
+    •	Acceleration segment: From the coil's midpoint to the coil's end, where the capsule accelerates due to the coil's force.
+    •	Constant velocity segment: From the coil’s end to either the midpoint of the next coil (if it exists) or to the tube’s end (for the last coil).
+
+![Diagram](docs/system_segments.png)
+
 
 ## 📋 Prerequisites
 
@@ -157,9 +180,9 @@ curl -X POST "http://localhost:8000/simulation/" \
 ```
 
 The simulation returns a compressed JSON file containing:
-- Complete position vs. time trajectory
-- Velocity vs. time trajectory  
-- Acceleration vs. time trajectory
+- Complete position vs. time trajectory points
+- Velocity vs. time trajectory points
+- Acceleration vs. time trajectory points
 - Coil engagement logs with energy consumption data
 - Summary statistics (total travel time, max velocity, final velocity)
 
@@ -172,6 +195,22 @@ The simulation generates comprehensive trajectory data:
   "success": true,
   "result": {
     "system_id": 2,
+    "system_details": [
+      {
+        "tube": {
+          "id": 3,
+          "length": 5.0
+        },
+        "capsule": {
+          "id": 3,
+          "mass": 1.0,
+          "initial_velocity": 0.5
+        },
+        "coils": [
+          {"id": 3, "length": 0.3, "force_applied": 10.0, "position": 0.5}
+        ]
+      }
+    ],
     "total_travel_time": 5.190295951692362,
     "final_velocity": 1.8027756377319946,
     "position_vs_time_trajectory": [

@@ -63,6 +63,7 @@ def run_simulation_by_system_id(system_id: int) -> SimulationResponse:
 
     simulation_result = SimulationResult(
         system_id=system_id,
+        system_details=format_system_details_for_simulation_result(system),
         total_travel_time=sum(segment.traverse_time for segment in segments),
         final_velocity=segments[-1].final_velocity if isinstance(segments[-1], AccelerationSegment) else segments[-1].velocity,
         position_vs_time_trajectory=position_vs_time_trajectory,
@@ -72,6 +73,35 @@ def run_simulation_by_system_id(system_id: int) -> SimulationResponse:
     )
 
     return SimulationResponse(success=True, result=simulation_result)
+
+
+def format_system_details_for_simulation_result(system: System) -> list[dict[str, float | int | str | dict | list]]:
+    tube = get_tube_by_id(system.tube_id)
+    capsule = get_capsule_by_id(system.capsule_id)
+    coils = get_system_coils(system)
+
+    return [
+        {
+            "tube": {
+                "id": tube.id,
+                "length": tube.length,
+            },
+            "capsule": {
+                "id": capsule.id,
+                "mass": capsule.mass,
+                "initial_velocity": capsule.initial_velocity,
+            },
+            "coils": [
+                {
+                    "id": coil.id,
+                    "length": coil.length,
+                    "force_applied": coil.force_applied,
+                    "position": system.coil_ids_to_positions[coil.id]
+                }
+                for coil in coils.values()
+            ],
+        }
+    ]
 
 
 def format_system_details(system: System) -> str:
