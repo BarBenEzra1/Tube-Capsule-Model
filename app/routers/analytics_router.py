@@ -101,7 +101,7 @@ async def get_simulation_metrics(simulation_id: str, db: Session = Depends(get_d
         "velocity_vs_time": velocity_trajectory,
         "acceleration_vs_time": acceleration_trajectory,
         "force_applied_vs_time": force_applied_vs_time,
-        "total_energy_consumed_vs_time": total_energy_consumed
+        "total_energy_consumed_vs_time": total_energy_consumed_metrics
     }
 
 

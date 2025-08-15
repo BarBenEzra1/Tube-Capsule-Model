@@ -78,7 +78,7 @@ def run_acceleration_segment(system_coil: SystemCoil, capsule: Capsule, current_
     energy_consumed = system_coil.coil.force_applied * acceleration_segment_length
 
     engagement_event_log(time_so_far, "coil_midpoint_accel", coil_id=system_coil.coil_id, velocity_mps=current_velocity, acceleration_mps2=acceleration, force_applied_n=system_coil.coil.force_applied, position_m=middle_coil_position)
-    engagement_event_log(time_so_far + traverse_time, "coil_exit", coil_id=system_coil.coil_id, velocity_mps=final_velocity, acceleration_duration_s=traverse_time, acceleration_segment_length_m=acceleration_segment_length, energy_consumed_J=energy_consumed, position_m=end_coil_position)
+    engagement_event_log(time_so_far + traverse_time, "coil_exit", coil_id=system_coil.coil_id, velocity_mps=final_velocity, acceleration_duration_s=traverse_time, acceleration_segment_length_m=acceleration_segment_length, energy_consumed_j=energy_consumed, position_m=end_coil_position)
 
     acceleration_segment = AccelerationSegment(
         segment_id=segment_id,
