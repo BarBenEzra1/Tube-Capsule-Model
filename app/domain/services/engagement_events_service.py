@@ -1,5 +1,6 @@
 from app.data_access.engagement_events_da import EngagementEventsDataAccess
 from app.database.config import SessionLocal
+from sqlalchemy.orm import Session
 from app.database.models import EngagementEvent
 
 _current_simulation_id: str | None = None
@@ -33,25 +34,18 @@ def engagement_event_log(timestamp_s: float, event: str, **kv) -> None:
         print(f"Database logging failed: {e}")
 
 
-def get_engagement_events(simulation_id: str, event: str | None = None, coil_id: int | None = None) -> list[EngagementEvent]:
-    global _engagement_events_data_access
-    
-    if not _engagement_events_data_access:
-        return []
+def get_engagement_events(simulation_id: str, event: str | None = None, coil_id: int | None = None, db: Session | None = None) -> list[EngagementEvent]:
+    if db is None:
+        db = SessionLocal()
+
+    engagement_events_data_access = EngagementEventsDataAccess(db)
     
     if event:
-        return _engagement_events_data_access.get_events_by_event(simulation_id, event)
+        return engagement_events_data_access.get_events_by_event(simulation_id, event)
     elif coil_id:
-        return _engagement_events_data_access.get_events_by_coil_id(simulation_id, coil_id)
+        return engagement_events_data_access.get_events_by_coil_id(simulation_id, coil_id)
     else:
-        return _engagement_events_data_access.get_events(simulation_id)
-
-
-def get_engagement_events_data_access() -> EngagementEventsDataAccess | None:
-    """Get the current log data access instance"""
-    global _engagement_events_data_access
-    
-    return _engagement_events_data_access
+        return engagement_events_data_access.get_events(simulation_id)
 
 
 def initialize_engagement_events() -> EngagementEventsDataAccess:

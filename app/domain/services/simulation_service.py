@@ -1,5 +1,6 @@
 from app.data_access.simulation_da import SimulationRunDataAccess
 from app.database.config import SessionLocal
+from sqlalchemy.orm import Session
 from app.database.models import SimulationRun
 from app.domain.services.engagement_events_service import initialize_engagement_events, get_engagement_events, set_current_simulation_id, set_current_system_id
 from app.domain.services.segments_service import run_simulation_and_get_segments
@@ -34,20 +35,30 @@ def run_simulation_by_system_id(system_id: int) -> SimulationResponse:
     )
     
     db_events = get_engagement_events(simulation_id)
-    coil_engagement_logs = [
-        {
-            "t_s": event.timestamp_s,
-            "event": event.event,
-            "coil_id": event.coil_id,
-            "position_m": event.position_m,
-            "velocity_mps": event.velocity_mps,
-            "acceleration_mps2": event.acceleration_mps2,
-            "acceleration_duration_s": event.acceleration_duration_s,
-            "acceleration_segment_length_m": event.acceleration_segment_length_m,
-            "force_applied_n": event.force_applied_n,
-            "energy_consumed_j": event.energy_consumed_j,
-        } for event in db_events
+    coil_engagement_logs = []
+
+    fields = [
+        "coil_id",
+        "position_m",
+        "velocity_mps",
+        "acceleration_mps2",
+        "acceleration_duration_s",
+        "acceleration_segment_length_m",
+        "force_applied_n",
+        "energy_consumed_j"
     ]
+
+    for event in db_events:
+        log_entry = {
+            "t_s": event.timestamp_s,
+            "event": event.event
+        }
+        log_entry.update({
+            field: getattr(event, field)
+            for field in fields
+            if getattr(event, field) is not None
+        })
+        coil_engagement_logs.append(log_entry)
 
     simulation_result = SimulationResult(
         simulation_id=simulation_id,
@@ -162,7 +173,6 @@ def simulation_complete_log(total_travel_time: float, final_velocity: float, tot
     # Reset global state
     _current_simulation_id = None
     _current_system_id = None
-    _log_data_access = None
 
 
 def get_simulation_run(simulation_id: str) -> SimulationRun | None:
@@ -171,8 +181,11 @@ def get_simulation_run(simulation_id: str) -> SimulationRun | None:
     return _log_data_access.get_simulation_run_by_id(simulation_id)
 
 
-def get_valid_simulation_run(simulation_id: str) -> SimulationRun:
+def get_valid_simulation_run(simulation_id: str, db: Session) -> SimulationRun:
     """Get a valid simulation run by its ID"""
+    global _log_data_access
+
+    _log_data_access = SimulationRunDataAccess(db)
     simulation_run = _log_data_access.get_simulation_run_by_id(simulation_id)
 
     if not simulation_run:
@@ -186,9 +199,13 @@ def get_valid_simulation_run(simulation_id: str) -> SimulationRun:
 
 def get_current_simulation_id() -> str | None:
     """Get the current simulation ID"""
+    global _current_simulation_id
+
     return _current_simulation_id
 
 
 def get_current_system_id() -> int | None:
     """Get the current system ID"""
+    global _current_system_id
+    
     return _current_system_id
