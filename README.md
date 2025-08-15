@@ -231,12 +231,11 @@ The simulation generates comprehensive trajectory data:
         {"time": 3.760018387919162, "acceleration": 0.0}
     ],
     "coil_engagement_logs": [
-        {"t": 0.0, "event": "run_start", "initial_velocity_mps": 0.5, "tube_length_m": 5.0}
-        {"t": 1.0, "event": "coil_enter", "coil_id": 3, "pos_start_m": 0.5, "entry_velocity_mps": 0.5}
-        {"t": 1.3, "event": "coil_midpoint_accel", "coil_id": 3, "start_velocity_mps": 0.5, "acceleration_mps2": 10.0, "force_applied_N": 10.0}
-        {"t": 1.4303, "event": "coil_exit", "coil_id": 3, "final_velocity_mps": 1.8027756377319946, "acceleration_duration_s": 0.13027756377319946, "acceleration_segment_length_m": 0.15}
-        {"t": 1.4303, "event": "energy_consumed", "coil_id": 3, "energy_consumed_J": 1.5}
-        {"t": 3.76, "event": "run_end", "coil_id": 3, "pos_start_m": 0.8, "final_velocity_mps": 1.8027756377319946, "tube_length_m": 5.0}
+        {"t_s": 0.0, "event": "run_start", "initial_velocity_mps": 0.5, "tube_length_m": 5.0},
+        {"t_s": 1.0, "event": "coil_enter", "coil_id": 3, "pos_start_m": 0.5, "entry_velocity_mps": 0.5},
+        {"t_s": 1.3, "event": "coil_midpoint_accel", "coil_id": 3, "start_velocity_mps": 0.5, "acceleration_mps2": 10.0, "force_applied_N": 10.0},
+        {"t_s": 1.4303, "event": "coil_exit", "coil_id": 3, "final_velocity_mps": 1.8027756377319946, "acceleration_duration_s": 0.13027756377319946, "acceleration_segment_length_m": 0.15, "energy_consumed_J": 1.5},
+        {"t_s": 3.76, "event": "run_end", "coil_id": 3, "pos_start_m": 0.8, "final_velocity_mps": 1.8027756377319946, "tube_length_m": 5.0}
     ]
   }
 }

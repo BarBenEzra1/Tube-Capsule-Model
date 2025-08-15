@@ -22,10 +22,12 @@ class AccelerationVsTimePoint(BaseModel):
 
 
 class SimulationResult(BaseModel):
+    simulation_id: str
     system_id: int
-    system_details: list[dict[str, float | int | str | dict | list]] = Field(description="Details of the system")
+    system_details: dict[str, float | int | str | dict | list] = Field(description="Details of the system")
     total_travel_time: float = Field(ge=0, description="Total time to traverse tube (seconds)")
     final_velocity: float = Field(ge=0, description="Final velocity at tube end (m/s)")
+    total_energy_consumed: float = Field(ge=0, description="Total energy consumed (J)")
     position_vs_time_trajectory: List[PositionVsTimePoint] = Field(description="Capsule position vs time trajectory")
     velocity_vs_time_trajectory: List[VelocityVsTimePoint] = Field(description="Capsule velocity vs time trajectory")
     acceleration_vs_time_trajectory: List[AccelerationVsTimePoint] = Field(description="Capsule acceleration vs time trajectory")

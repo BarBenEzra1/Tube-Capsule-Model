@@ -4,7 +4,7 @@ import json
 
 
 LOG_FILE_PATH = Path(f"app/data/logs/simulation_{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}.log")
-LOG_JSON_FILE_PATH = Path(f"app/data/logs/simulation_{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}.json")
+LOG_JSON_FILE_PATH = Path(f"app/data/logs/simulation_{datetime.now(timezone.utc).strftime('%Y-%m-%d_%H-%M-%S')}.jsonl")
 
 
 def now_iso():

@@ -4,10 +4,10 @@ from app.domain.entities.constant_velocity_segment import ConstantVelocitySegmen
 from app.domain.entities.tube import Tube
 from app.domain.entities.systemCoil import SystemCoil
 from app.domain.utils.physics_utils import get_traverse_time_for_constant_velocity, get_acceleration, get_final_velocity, get_traverse_time_for_acceleration
-from app.domain.services.log_service import log
+from app.domain.services.engagement_events_service import engagement_event_log
 
 def run_first_segment(system_coils: list[SystemCoil], capsule: Capsule, tube: Tube) -> ConstantVelocitySegment:
-    log(0.0, "run_start", initial_velocity_mps=capsule.initial_velocity, tube_length_m=tube.length)
+    engagement_event_log(0.0, "run_start", velocity_mps=capsule.initial_velocity, position_m=0)
 
     if len(system_coils) == 0:
         return ConstantVelocitySegment(
@@ -27,7 +27,7 @@ def run_first_segment(system_coils: list[SystemCoil], capsule: Capsule, tube: Tu
 
         time_to_reach_first_coil = get_traverse_time_for_constant_velocity(capsule.initial_velocity, first_coil.position)
         
-        log(time_to_reach_first_coil, "coil_enter", coil_id=first_coil_id, pos_start_m=first_coil.position, entry_velocity_mps=capsule.initial_velocity)
+        engagement_event_log(time_to_reach_first_coil, "coil_enter", coil_id=first_coil_id, position_m=first_coil.position, velocity_mps=capsule.initial_velocity)
 
         return ConstantVelocitySegment(
                 segment_id=1, 
@@ -40,14 +40,7 @@ def run_first_segment(system_coils: list[SystemCoil], capsule: Capsule, tube: Tu
             )
 
 
-def run_constant_velocity_segment_followed_by_acceleration(
-    acceleration_coil: SystemCoil, 
-    next_coil: SystemCoil | None,
-    tube: Tube,
-    current_velocity: float,
-    time_so_far: float,
-    segment_id: int
-    ) -> ConstantVelocitySegment:
+def run_constant_velocity_segment(acceleration_coil: SystemCoil, next_coil: SystemCoil | None, tube: Tube, current_velocity: float, time_so_far: float, segment_id: int) -> ConstantVelocitySegment:
     prev_coil_end_position = acceleration_coil.position + acceleration_coil.coil.length
     seg_len = (
         next_coil.position + round(next_coil.coil.length / 2, 6) - prev_coil_end_position
@@ -69,30 +62,12 @@ def run_constant_velocity_segment_followed_by_acceleration(
     if next_coil is not None:
         dist_to_next_coil = next_coil.position - prev_coil_end_position
         time_to_reach_next_coil = get_traverse_time_for_constant_velocity(current_velocity, dist_to_next_coil)
-        log(time_so_far + time_to_reach_next_coil, "coil_enter", coil_id=next_coil.coil_id, pos_start_m=next_coil.position, entry_velocity_mps=current_velocity)
-    else:
-        log(time_so_far + traverse_time, "run_end", coil_id=acceleration_coil.coil_id, pos_start_m=prev_coil_end_position, final_velocity_mps=current_velocity, tube_length_m=tube.length)
-
-        constant_velocity_segment = ConstantVelocitySegment(
-            segment_id=segment_id + 1,
-            traverse_time=time_so_far + traverse_time,
-            start_time=time_so_far + traverse_time,
-            length=tube.length,
-            starting_position=tube.length,
-            related_coil_id=None,
-            velocity=current_velocity,
-        )
+        engagement_event_log(time_so_far + time_to_reach_next_coil, "coil_enter", coil_id=next_coil.coil_id, position_m=next_coil.position, velocity_mps=current_velocity)
 
     return constant_velocity_segment
 
 
-def run_acceleration_segment(
-    system_coil: SystemCoil, 
-    capsule: Capsule,
-    current_velocity: float,
-    time_so_far: float,
-    segment_id: int
-    ) -> AccelerationSegment:
+def run_acceleration_segment(system_coil: SystemCoil, capsule: Capsule, current_velocity: float, time_so_far: float, segment_id: int) -> AccelerationSegment:
     middle_coil_position = system_coil.position + round(system_coil.coil.length / 2, 6)
     end_coil_position = system_coil.position + system_coil.coil.length
 
@@ -102,9 +77,8 @@ def run_acceleration_segment(
     traverse_time = get_traverse_time_for_acceleration(current_velocity, final_velocity, acceleration)
     energy_consumed = system_coil.coil.force_applied * acceleration_segment_length
 
-    log(time_so_far, "coil_midpoint_accel", coil_id=system_coil.coil_id, start_velocity_mps=current_velocity, acceleration_mps2=acceleration, force_applied_N=system_coil.coil.force_applied)
-    log(time_so_far + traverse_time, "coil_exit", coil_id=system_coil.coil_id, final_velocity_mps=final_velocity, acceleration_duration_s=traverse_time, acceleration_segment_length_m=acceleration_segment_length)
-    log(time_so_far + traverse_time, "energy_consumed", coil_id=system_coil.coil_id, energy_consumed_J=energy_consumed)
+    engagement_event_log(time_so_far, "coil_midpoint_accel", coil_id=system_coil.coil_id, velocity_mps=current_velocity, acceleration_mps2=acceleration, force_applied_N=system_coil.coil.force_applied, position_m=middle_coil_position)
+    engagement_event_log(time_so_far + traverse_time, "coil_exit", coil_id=system_coil.coil_id, velocity_mps=final_velocity, acceleration_duration_s=traverse_time, acceleration_segment_length_m=acceleration_segment_length, energy_consumed_J=energy_consumed, position_m=end_coil_position)
 
     acceleration_segment = AccelerationSegment(
         segment_id=segment_id,
@@ -120,3 +94,19 @@ def run_acceleration_segment(
     )
 
     return acceleration_segment
+
+
+def run_last_segment(last_coil: SystemCoil, tube: Tube, current_velocity: float, time_so_far: float, segment_id: int) -> ConstantVelocitySegment:
+    engagement_event_log(time_so_far, "run_end", coil_id=last_coil.coil_id, position_m=tube.length, velocity_mps=current_velocity)
+
+    constant_velocity_segment = ConstantVelocitySegment(
+        segment_id=segment_id + 1,
+        traverse_time=0,
+        start_time=time_so_far,
+        length=tube.length,
+        starting_position=tube.length,
+        related_coil_id=None,
+        velocity=current_velocity,
+    )
+
+    return constant_velocity_segment

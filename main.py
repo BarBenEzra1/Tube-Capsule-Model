@@ -6,6 +6,7 @@ from app.routers.system_router import router as system_router
 from app.routers.tube_router import router as tube_router
 from app.routers.coil_router import router as coil_router
 from app.routers.capsule_router import router as capsule_router
+from app.routers.analytics_router import router as analytics_router
 
 app = FastAPI(
     title="Tube Capsule Model API",
@@ -29,6 +30,7 @@ app.include_router(coil_router)
 app.include_router(capsule_router)
 app.include_router(system_router)
 app.include_router(simulation_router)
+app.include_router(analytics_router)
 
 if __name__ == "__main__":
     import uvicorn

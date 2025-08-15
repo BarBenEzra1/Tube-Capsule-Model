@@ -1,0 +1,10 @@
+{"t": 0.0, "event": "run_start", "initial_velocity_mps": 15.0, "tube_length_m": 100.0}
+{"t": 2.0, "event": "coil_enter", "coil_id": 1, "pos_start_m": 30, "entry_velocity_mps": 15.0}
+{"t": 2.4, "event": "coil_midpoint_accel", "coil_id": 1, "start_velocity_mps": 15.0, "acceleration_mps2": 80.0, "force_applied_N": 400.0}
+{"t": 2.6428, "event": "coil_exit", "coil_id": 1, "final_velocity_mps": 34.42382895611701, "acceleration_duration_s": 0.24279786195146266, "acceleration_segment_length_m": 6.0}
+{"t": 2.6428, "event": "energy_consumed", "coil_id": 1, "energy_consumed_J": 2400.0}
+{"t": 3.3109, "event": "coil_enter", "coil_id": 2, "pos_start_m": 65, "entry_velocity_mps": 34.42382895611701}
+{"t": 3.4271, "event": "coil_midpoint_accel", "coil_id": 2, "start_velocity_mps": 34.42382895611701, "acceleration_mps2": 60.0, "force_applied_N": 300.0}
+{"t": 3.5335, "event": "coil_exit", "coil_id": 2, "final_velocity_mps": 40.80441152620633, "acceleration_duration_s": 0.10634304283482195, "acceleration_segment_length_m": 4.0}
+{"t": 3.5335, "event": "energy_consumed", "coil_id": 2, "energy_consumed_J": 1200.0}
+{"t": 4.1952, "event": "run_end", "coil_id": 2, "pos_start_m": 73.0, "final_velocity_mps": 40.80441152620633, "tube_length_m": 100.0}

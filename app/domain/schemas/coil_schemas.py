@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 class CoilCreate(BaseModel):
     length: float = Field(gt=0, description="Length must be positive")
-    force_applied: float = Field(gt=0, description="Force must be positive")
+    force_applied: float
 
 
 class CoilResponse(BaseModel):
@@ -19,4 +19,3 @@ class CoilUpdate(BaseModel):
 
 class CoilsListResponse(BaseModel):
     entities: list[CoilResponse]
-
