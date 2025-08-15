@@ -16,6 +16,8 @@ def engagement_event_log(timestamp_s: float, event: str, **kv) -> None:
         event: Event type/name
         **kv: Additional event data as key-value pairs
     """
+    global _current_simulation_id, _current_system_id, _engagement_events_data_access
+    
     if not _current_simulation_id or not _engagement_events_data_access:
         return
     
@@ -32,6 +34,8 @@ def engagement_event_log(timestamp_s: float, event: str, **kv) -> None:
 
 
 def get_engagement_events(simulation_id: str, event: str | None = None, coil_id: int | None = None) -> list[EngagementEvent]:
+    global _engagement_events_data_access
+    
     if not _engagement_events_data_access:
         return []
     
@@ -45,11 +49,15 @@ def get_engagement_events(simulation_id: str, event: str | None = None, coil_id:
 
 def get_engagement_events_data_access() -> EngagementEventsDataAccess | None:
     """Get the current log data access instance"""
+    global _engagement_events_data_access
+    
     return _engagement_events_data_access
 
 
 def initialize_engagement_events() -> EngagementEventsDataAccess:
     """Create a new log data access instance"""
+    global _engagement_events_data_access
+    
     db = SessionLocal()
     _engagement_events_data_access = EngagementEventsDataAccess(db) 
     return _engagement_events_data_access
@@ -57,9 +65,11 @@ def initialize_engagement_events() -> EngagementEventsDataAccess:
 
 def set_current_simulation_id(simulation_id: str) -> None:
     """Set the current simulation ID"""
+    global _current_simulation_id
     _current_simulation_id = simulation_id
 
 
 def set_current_system_id(system_id: int) -> None:
     """Set the current system ID"""
+    global _current_system_id
     _current_system_id = system_id

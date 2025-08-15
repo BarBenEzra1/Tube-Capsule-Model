@@ -54,7 +54,7 @@ class SimulationRunDataAccess:
         ).limit(limit).all()
     
 
-    def get_simulation_run(self, simulation_id: str) -> SimulationRun | None:
+    def get_simulation_run_by_id(self, simulation_id: str) -> SimulationRun | None:
         """Get a specific simulation run"""
         return self.db.query(SimulationRun).filter(
             SimulationRun.id == simulation_id

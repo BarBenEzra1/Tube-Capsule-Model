@@ -38,7 +38,14 @@ def run_simulation_by_system_id(system_id: int) -> SimulationResponse:
         {
             "t_s": event.timestamp_s,
             "event": event.event,
-            **event.event_data
+            "coil_id": event.coil_id,
+            "position_m": event.position_m,
+            "velocity_mps": event.velocity_mps,
+            "acceleration_mps2": event.acceleration_mps2,
+            "acceleration_duration_s": event.acceleration_duration_s,
+            "acceleration_segment_length_m": event.acceleration_segment_length_m,
+            "force_applied_n": event.force_applied_n,
+            "energy_consumed_j": event.energy_consumed_j,
         } for event in db_events
     ]
 
@@ -161,12 +168,12 @@ def simulation_complete_log(total_travel_time: float, final_velocity: float, tot
 def get_simulation_run(simulation_id: str) -> SimulationRun | None:
     """Get a simulation run by its ID"""
     global _log_data_access
-    return _log_data_access.get_simulation_run(simulation_id)
+    return _log_data_access.get_simulation_run_by_id(simulation_id)
 
 
 def get_valid_simulation_run(simulation_id: str) -> SimulationRun:
     """Get a valid simulation run by its ID"""
-    simulation_run = _log_data_access.get_simulation_run(simulation_id)
+    simulation_run = _log_data_access.get_simulation_run_by_id(simulation_id)
 
     if not simulation_run:
         raise ValueError(f"Simulation run with id {simulation_id} not found")

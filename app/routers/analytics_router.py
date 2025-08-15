@@ -7,7 +7,7 @@ router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
 
 @router.get("/simulation-runs/{simulation_id}", response_model=dict)
-async def get_simulation_run_by_id(simulation_id: str):
+async def get_simulation_run(simulation_id: str):
     """Get a simulation run by its ID"""
     simulation_run = get_valid_simulation_run(simulation_id)
     
@@ -49,18 +49,18 @@ async def get_simulation_engagement_events(simulation_id: str, event: str | None
     ]
 
 
-@router.get("/simulation-runs/{simulation_id}/trajectory")
-async def get_simulation_trajectory(simulation_id: str):
+@router.get("/simulation-runs/{simulation_id}/metrics")
+async def get_simulation_metrics(simulation_id: str):
     """Get position, velocity, and acceleration trajectory for a simulation"""
     get_valid_simulation_run(simulation_id)
 
     events = get_engagement_events(simulation_id)
     
-    position_trajectory = []
+    position_trajectory = []    
     velocity_trajectory = []
     acceleration_trajectory = []
     force_applied_vs_time = []
-    total_energy_consumed_trajectory = []
+    total_energy_consumed = []
 
     total_energy_consumed = 0
 
@@ -89,7 +89,7 @@ async def get_simulation_trajectory(simulation_id: str):
 
         total_energy_consumed += event.energy_consumed_j
 
-        total_energy_consumed_trajectory.append({
+        total_energy_consumed.append({
             "t_s": timestamp,
             "total_energy_consumed_j": total_energy_consumed
         })
@@ -100,7 +100,7 @@ async def get_simulation_trajectory(simulation_id: str):
         "velocity_vs_time": velocity_trajectory,
         "acceleration_vs_time": acceleration_trajectory,
         "force_applied_vs_time": force_applied_vs_time,
-        "total_energy_consumed_vs_time": total_energy_consumed_trajectory
+        "total_energy_consumed_vs_time": total_energy_consumed
     }
 
 

@@ -4,10 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 # Database configuration
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    "postgresql://postgres:password@localhost:5432/tube_capsule_db"
-)
+DATABASE_URL = "postgresql://postgres:password@localhost:5433/tube_capsule_db"
 
 # Create SQLAlchemy engine
 engine = create_engine(DATABASE_URL, echo=True)

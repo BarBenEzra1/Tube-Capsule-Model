@@ -13,7 +13,7 @@ from sqlalchemy.exc import SQLAlchemyError
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from app.database.config import DATABASE_URL, Base
-from app.database.models import SimulationEvent, SimulationRun
+from app.database.models import EngagementEvent, SimulationRun
 
 
 def create_database():
@@ -64,7 +64,7 @@ def create_tables():
         # Print table information
         print("\n📊 Created tables:")
         print("  - simulation_runs: Stores simulation run metadata and summary statistics")
-        print("  - simulation_events: Stores time series simulation events")
+        print("  - engagement_events: Stores time series simulation events")
         print("\n🔍 Indexes created for optimal time series queries:")
         print("  - idx_simulation_time: (simulation_id, timestamp_s)")
         print("  - idx_system_time: (system_id, timestamp_s)")
@@ -83,7 +83,11 @@ def test_connection():
     print("Testing database connection...")
     
     try:
-        engine = create_engine(DATABASE_URL)
+        # Connect to the default postgres database to test connection
+        db_url_parts = DATABASE_URL.split('/')
+        base_url = '/'.join(db_url_parts[:-1]) + '/postgres'
+        
+        engine = create_engine(base_url)
         with engine.connect() as conn:
             result = conn.execute(text("SELECT version()"))
             version = result.fetchone()[0]
