@@ -65,7 +65,6 @@ def run_simulation_by_system_id(system_id: int) -> SimulationResponse:
         system_id=system_id,
         total_travel_time=sum(segment.traverse_time for segment in segments),
         final_velocity=segments[-1].final_velocity if isinstance(segments[-1], AccelerationSegment) else segments[-1].velocity,
-        max_velocity=max(segment.final_velocity if isinstance(segment, AccelerationSegment) else segment.velocity for segment in segments),
         position_vs_time_trajectory=position_vs_time_trajectory,
         velocity_vs_time_trajectory=velocity_vs_time_trajectory,
         acceleration_vs_time_trajectory=acceleration_vs_time_trajectory,
