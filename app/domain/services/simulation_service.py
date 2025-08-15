@@ -2,6 +2,7 @@ from app.data_access.simulation_da import SimulationRunDataAccess
 from app.database.config import SessionLocal
 from sqlalchemy.orm import Session
 from app.database.models import SimulationRun
+from app.domain.entities.coil import Coil
 from app.domain.services.engagement_events_service import initialize_engagement_events, get_engagement_events, set_current_simulation_id, set_current_system_id
 from app.domain.services.segments_service import run_simulation_and_get_segments
 from app.domain.services.system_service import get_system_by_id, get_system_coils
@@ -26,7 +27,9 @@ def run_simulation_by_system_id(system_id: int) -> SimulationResponse:
     initialize_engagement_events()
     simulation_id = simulation_start_log(system)
     segments = run_simulation_and_get_segments(system)
-    position_vs_time_trajectory, velocity_vs_time_trajectory, acceleration_vs_time_trajectory, force_applied_vs_time, total_energy_consumed_metrics, total_travel_time, final_velocity, total_energy_consumed = get_simulation_results(segments)
+
+    coils = get_system_coils(system)
+    position_vs_time_trajectory, velocity_vs_time_trajectory, acceleration_vs_time_trajectory, force_applied_vs_time, total_energy_consumed_metrics, total_travel_time, final_velocity, total_energy_consumed = get_simulation_results(segments, coils)
 
     simulation_complete_log(
         total_travel_time=total_travel_time,
@@ -78,15 +81,17 @@ def run_simulation_by_system_id(system_id: int) -> SimulationResponse:
     return SimulationResponse(success=True, result=simulation_result)
 
 
-def get_simulation_results(segments: list[Segment]):
+def get_simulation_results(segments: list[Segment], coils: dict[int, Coil]):
     position_vs_time_trajectory = []
     velocity_vs_time_trajectory = []
     acceleration_vs_time_trajectory = []
     force_applied_vs_time = []
     total_energy_consumed_metrics = []
-
+    total_energy_consumed = 0
+    
     for segment in segments:
         is_accel = isinstance(segment, AccelerationSegment)
+        coil = coils[segment.related_coil_id] if segment.related_coil_id else None
 
         position_vs_time_trajectory.append(
             PositionVsTimePoint(
@@ -112,7 +117,7 @@ def get_simulation_results(segments: list[Segment]):
         force_applied_vs_time.append(
             ForceAppliedVsTimePoint(
                 time=segment.start_time,
-                force_applied=segment.force_applied if is_accel else 0
+                force_applied=coil.force_applied if is_accel and coil else 0
             )
         )
 

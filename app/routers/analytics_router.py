@@ -8,23 +8,6 @@ from app.domain.services.simulation_service import get_valid_simulation_run
 router = APIRouter(prefix="/analytics", tags=["Analytics"])
 
 
-@router.get("/simulation-runs/{simulation_id}", response_model=dict)
-async def get_simulation_run(simulation_id: str, db: Session = Depends(get_db)):
-    """Get a simulation run by its ID"""
-    simulation_run = get_valid_simulation_run(simulation_id, db)
-    
-    return {
-        "simulation_id": simulation_run.id,
-        "system_id": simulation_run.system_id,
-        "total_travel_time": simulation_run.total_travel_time,
-        "final_velocity": simulation_run.final_velocity,
-        "total_energy_consumed": simulation_run.total_energy_consumed,
-        "status": simulation_run.status,
-        "started_at": simulation_run.started_at,
-        "completed_at": simulation_run.completed_at,
-    }
-
-
 @router.get("/simulation-runs/{simulation_id}/engagement-events")
 async def get_simulation_engagement_events(simulation_id: str, event: str | None = Query(None, description="Filter by event type"), coil_id: int | None = Query(None, description="Filter by coil ID"), db: Session = Depends(get_db)):
     """Get all events for a specific simulation run"""

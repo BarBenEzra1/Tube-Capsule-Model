@@ -3,7 +3,7 @@ from app.domain.entities.system import System
 from app.domain.services.capsule_service import get_capsule_by_id
 from app.domain.services.system_service import get_system_coils
 from app.domain.entities.coil import Coil
-from app.domain.entities.systemCoil import SystemCoil
+from app.domain.entities.system_coil import SystemCoil
 from app.domain.services.tube_service import get_tube_by_id
 from app.domain.utils.segments_utils import run_first_segment, run_constant_velocity_segment, run_acceleration_segment, run_last_segment
 

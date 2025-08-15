@@ -2,7 +2,7 @@ from app.domain.entities.acceleration_segment import AccelerationSegment
 from app.domain.entities.capsule import Capsule
 from app.domain.entities.constant_velocity_segment import ConstantVelocitySegment
 from app.domain.entities.tube import Tube
-from app.domain.entities.systemCoil import SystemCoil
+from app.domain.entities.system_coil import SystemCoil
 from app.domain.utils.physics_utils import get_traverse_time_for_constant_velocity, get_acceleration, get_final_velocity, get_traverse_time_for_acceleration
 from app.domain.services.engagement_events_service import engagement_event_log
 
