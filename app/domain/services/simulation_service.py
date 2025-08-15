@@ -7,7 +7,7 @@ from app.domain.services.segments_service import run_simulation_and_get_segments
 from app.domain.services.system_service import get_system_by_id, get_system_coils
 from app.domain.services.tube_service import get_tube_by_id
 from app.domain.services.capsule_service import get_capsule_by_id
-from app.domain.schemas.simulation_schemas import SimulationResponse, SimulationError, SimulationResult, PositionVsTimePoint, VelocityVsTimePoint, AccelerationVsTimePoint
+from app.domain.schemas.simulation_schemas import SimulationResponse, SimulationError, SimulationResult, PositionVsTimePoint, VelocityVsTimePoint, AccelerationVsTimePoint, ForceAppliedVsTimePoint, TotalEnergyConsumedVsTimePoint
 from app.domain.entities.acceleration_segment import AccelerationSegment
 from app.domain.entities.segment import Segment
 from app.domain.entities.system import System
@@ -26,7 +26,7 @@ def run_simulation_by_system_id(system_id: int) -> SimulationResponse:
     initialize_engagement_events()
     simulation_id = simulation_start_log(system)
     segments = run_simulation_and_get_segments(system)
-    position_vs_time_trajectory, velocity_vs_time_trajectory, acceleration_vs_time_trajectory, total_travel_time, final_velocity, total_energy_consumed = get_simulation_results(segments)
+    position_vs_time_trajectory, velocity_vs_time_trajectory, acceleration_vs_time_trajectory, force_applied_vs_time, total_energy_consumed_metrics, total_travel_time, final_velocity, total_energy_consumed = get_simulation_results(segments)
 
     simulation_complete_log(
         total_travel_time=total_travel_time,
@@ -70,6 +70,8 @@ def run_simulation_by_system_id(system_id: int) -> SimulationResponse:
         position_vs_time_trajectory=position_vs_time_trajectory,
         velocity_vs_time_trajectory=velocity_vs_time_trajectory,
         acceleration_vs_time_trajectory=acceleration_vs_time_trajectory,
+        force_applied_vs_time_trajectory=force_applied_vs_time,
+        total_energy_consumed_vs_time_trajectory=total_energy_consumed_metrics,
         coil_engagement_logs=coil_engagement_logs,
     )
 
@@ -77,27 +79,51 @@ def run_simulation_by_system_id(system_id: int) -> SimulationResponse:
 
 
 def get_simulation_results(segments: list[Segment]):
-    position_vs_time_trajectory = [
-        PositionVsTimePoint(
-            time=segment.start_time,
-            position=segment.starting_position,
+    position_vs_time_trajectory = []
+    velocity_vs_time_trajectory = []
+    acceleration_vs_time_trajectory = []
+    force_applied_vs_time = []
+    total_energy_consumed_metrics = []
+
+    for segment in segments:
+        is_accel = isinstance(segment, AccelerationSegment)
+
+        position_vs_time_trajectory.append(
+            PositionVsTimePoint(
+                time=segment.start_time,
+                position=segment.starting_position
+            )
         )
-        for segment in segments
-    ]
-    velocity_vs_time_trajectory = [
-        VelocityVsTimePoint(
-            time=segment.start_time,
-            velocity=segment.final_velocity if isinstance(segment, AccelerationSegment) else segment.velocity,
+
+        velocity_vs_time_trajectory.append(
+            VelocityVsTimePoint(
+                time=segment.start_time,
+                velocity=segment.final_velocity if is_accel else segment.velocity
+            )
         )
-        for segment in segments
-    ]
-    acceleration_vs_time_trajectory = [
-        AccelerationVsTimePoint(
-            time=segment.start_time,
-            acceleration=segment.acceleration if isinstance(segment, AccelerationSegment) else 0,
+
+        acceleration_vs_time_trajectory.append(
+            AccelerationVsTimePoint(
+                time=segment.start_time,
+                acceleration=segment.acceleration if is_accel else 0
+            )
         )
-        for segment in segments
-    ]
+
+        force_applied_vs_time.append(
+            ForceAppliedVsTimePoint(
+                time=segment.start_time,
+                force_applied=segment.force_applied if is_accel else 0
+            )
+        )
+
+        total_energy_consumed += segment.energy_consumed if is_accel else 0
+
+        total_energy_consumed_metrics.append(
+            TotalEnergyConsumedVsTimePoint(
+                time=segment.start_time,
+                total_energy_consumed=total_energy_consumed
+            )
+        )
 
     total_travel_time = sum(segment.traverse_time for segment in segments)
     final_velocity = segments[-1].final_velocity if isinstance(segments[-1], AccelerationSegment) else segments[-1].velocity
@@ -106,7 +132,7 @@ def get_simulation_results(segments: list[Segment]):
         if isinstance(segment, AccelerationSegment)
     )
 
-    return position_vs_time_trajectory, velocity_vs_time_trajectory, acceleration_vs_time_trajectory, total_travel_time, final_velocity, total_energy_consumed
+    return position_vs_time_trajectory, velocity_vs_time_trajectory, acceleration_vs_time_trajectory, force_applied_vs_time, total_energy_consumed_metrics, total_travel_time, final_velocity, total_energy_consumed
 
 
 def format_system_details_for_simulation_result(system: System) -> dict[str, float | int | str | dict | list]:

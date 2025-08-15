@@ -21,6 +21,16 @@ class AccelerationVsTimePoint(BaseModel):
     acceleration: float = Field(description="Acceleration in m/s²")
 
 
+class ForceAppliedVsTimePoint(BaseModel):
+    time: float = Field(ge=0, description="Time in seconds")
+    force_applied: float = Field(description="Force applied (N)")
+
+
+class TotalEnergyConsumedVsTimePoint(BaseModel):
+    time: float = Field(ge=0, description="Time in seconds")
+    total_energy_consumed: float = Field(ge=0, description="Total energy consumed (J)")
+
+
 class SimulationResult(BaseModel):
     simulation_id: str
     system_id: int
@@ -31,6 +41,8 @@ class SimulationResult(BaseModel):
     position_vs_time_trajectory: List[PositionVsTimePoint] = Field(description="Capsule position vs time trajectory")
     velocity_vs_time_trajectory: List[VelocityVsTimePoint] = Field(description="Capsule velocity vs time trajectory")
     acceleration_vs_time_trajectory: List[AccelerationVsTimePoint] = Field(description="Capsule acceleration vs time trajectory")
+    force_applied_vs_time_trajectory: List[ForceAppliedVsTimePoint] = Field(description="Force applied vs time trajectory")
+    total_energy_consumed_vs_time_trajectory: List[TotalEnergyConsumedVsTimePoint] = Field(description="Total energy consumed vs time trajectory")
     coil_engagement_logs: list[dict[str, float | int | str]] = Field(description="Logs of coil engagement")
 
 
