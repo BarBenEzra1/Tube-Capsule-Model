@@ -54,51 +54,55 @@ For tubes with coils, the segmentation follows this pattern:
 
 ![Diagram](docs/system_segments.png)
 
-
 ## 📋 Prerequisites
 
-- Python 3.8+
-- pip package manager
+You only need to have Docker and Docker Compose installed on your system:
 
-## 🛠️ Installation
-
-1. **Clone the repository**:
-   ```bash
-   git clone <repository-url>
-   cd tube-capsule-model
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   pip install fastapi uvicorn pydantic
-   ```
+- **Docker Desktop** (includes Docker Compose): [Download here](https://www.docker.com/products/docker-desktop/)
+- Or install **Docker** and **Docker Compose** separately on Linux
 
 ## 🚀 Quick Start
 
-### Start the Server
+1. **Clone or download this project** to your local machine
 
-**Option 1: Using the run script (recommended)**
-```bash
-python run_server.py
-```
+2. **Navigate to the project directory:**
+   ```bash
+   cd tube-capsule-model
+   ```
 
-**Option 2: Direct execution**
-```bash
-python main.py
-```
+3. **Start the application:**
+   ```bash
+   docker compose up --build
+   ```
 
-**Option 3: Using uvicorn directly**
-```bash
-uvicorn main:app --host 0.0.0.0 --port 8000 --reload
-```
+4. **Wait for the services to start** (first time may take a few minutes to download images and build)
 
-### Access the API
+5. **Access the Swagger UI** in your browser:
+   ```
+   http://localhost:8000/docs
+   ```
 
-Once running, the API will be available at:
+That's it! 🎉
 
+Once running, you can access:
+
+- **Swagger UI (Interactive API docs)**: http://localhost:8000/docs
+- **ReDoc (Alternative docs)**: http://localhost:8000/redoc
 - **API Root**: http://localhost:8000
-- **Interactive Documentation (Swagger UI)**: http://localhost:8000/docs
-- **Alternative Documentation (ReDoc)**: http://localhost:8000/redoc
+
+## 🗄️ Database Access
+
+The PostgreSQL database runs in a Docker container and is accessible at:
+- **Host**: localhost
+- **Port**: 5432
+- **Database**: tube_capsule_db
+- **Username**: postgres
+- **Password**: password
+
+You can connect using any PostgreSQL client (pgAdmin, DBeaver, etc.) or command line:
+```bash
+docker exec -it tube-capsule-postgres psql -U postgres -d tube_capsule_db
+```
 
 ## 📚 API Endpoints
 
