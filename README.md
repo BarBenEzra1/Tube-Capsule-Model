@@ -374,13 +374,20 @@ The simulation generates comprehensive trajectory data:
 ```
 tube-capsule-model/
 ├── app/
-│   ├── data/                   # JSON-based data storage
+│   ├── data/                   # JSON-based data storage for system entities
+│   ├── database/               # Database configuration & models
+│   ├── data_access/            # Data access layer
 │   ├── domain/
 │   │   ├── entities/           # Core business objects
 │   │   ├── schemas/            # Pydantic data models
 │   │   ├── services/           # Business logic layer
 │   │   └── utils/              # Physics calculations & utilities
 │   └── routers/                # FastAPI route handlers
+├── docs/                       # Diagrams for README
+├── Dockerfile                  # Docker container definition
+├── docker-compose.yml          # Multi-service Docker setup
+├── docker-init-db.py           # Database initialization for Docker
+├── init_db.py                  # Local database initialization
 ├── main.py                     # FastAPI application setup
 ├── run_server.py               # Development server launcher
 └── requirements.txt            # Project dependencies
