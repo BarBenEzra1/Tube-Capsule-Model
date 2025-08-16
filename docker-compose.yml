@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: tube-capsule-postgres
+    environment:
+      POSTGRES_DB: tube_capsule_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init_db.py:/docker-entrypoint-initdb.d/init_db.py
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Application
+  app:
+    build: .
+    container_name: tube-capsule-app
+    environment:
+      DATABASE_URL: postgresql://postgres:password@tube-capsule-postgres:5432/tube_capsule_db
+      PYTHONPATH: /app
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./app:/app/app
+      - ./docs:/app/docs
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
