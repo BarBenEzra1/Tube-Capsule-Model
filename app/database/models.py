@@ -42,9 +42,9 @@ class SimulationRun(Base):
 
     id = Column(String(50), primary_key=True)
     system_id = Column(Integer, nullable=False, index=True)
-    total_travel_time = Column(Float, nullable=True)
-    final_velocity = Column(Float, nullable=True)
-    total_energy_consumed = Column(Float, nullable=True)
+    total_travel_time_s = Column(Float, nullable=True)
+    final_velocity_mps = Column(Float, nullable=True)
+    total_energy_consumed_j = Column(Float, nullable=True)
     started_at = Column(DateTime(timezone=True), nullable=False)
     completed_at = Column(DateTime(timezone=True), nullable=True)
     status = Column(String(20), default="running")  # running, completed, failed 

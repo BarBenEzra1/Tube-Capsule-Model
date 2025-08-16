@@ -12,6 +12,10 @@ from app.domain.schemas.simulation_schemas import SimulationResponse, Simulation
 from app.domain.entities.acceleration_segment import AccelerationSegment
 from app.domain.entities.segment import Segment
 from app.domain.entities.system import System
+from app.domain.entities.capsule import Capsule
+from app.domain.entities.tube import Tube
+from app.domain.schemas.simulation_schemas import CompleteFlowRequest
+from app.domain.utils.get_next_id import get_next_id
 
 _current_simulation_id: str | None = None
 _current_system_id: int | None = None
@@ -22,19 +26,19 @@ def run_simulation_by_system_id(system_id: int) -> SimulationResponse:
     system = get_system_by_id(system_id)
 
     if system is None:
-        return SimulationResponse(success=False, error=SimulationError(system_id=system_id, error_message="System not found", error_code="SYSTEM_NOT_FOUND"))
+        raise ValueError(f"System with id {system_id} not found")
     
     initialize_engagement_events()
     simulation_id = simulation_start_log(system)
     segments = run_simulation_and_get_segments(system)
 
     coils = get_system_coils(system)
-    position_vs_time_trajectory, velocity_vs_time_trajectory, acceleration_vs_time_trajectory, force_applied_vs_time, total_energy_consumed_metrics, total_travel_time, final_velocity, total_energy_consumed = get_simulation_results(segments, coils)
+    position_vs_time_trajectory, velocity_vs_time_trajectory, acceleration_vs_time_trajectory, force_applied_vs_time, total_energy_consumed_metrics, total_travel_time_s, final_velocity_mps, total_energy_consumed_j = get_simulation_results(segments, coils)
 
     simulation_complete_log(
-        total_travel_time=total_travel_time,
-        final_velocity=final_velocity,
-        total_energy_consumed=total_energy_consumed
+        total_travel_time_s=total_travel_time_s,
+        final_velocity_mps=final_velocity_mps,
+        total_energy_consumed_j=total_energy_consumed_j
     )
     
     db_events = get_engagement_events(simulation_id)
@@ -67,9 +71,9 @@ def run_simulation_by_system_id(system_id: int) -> SimulationResponse:
         simulation_id=simulation_id,
         system_id=system_id,
         system_details=format_system_details_for_simulation_result(system),
-        total_travel_time=total_travel_time,
-        final_velocity=final_velocity,
-        total_energy_consumed=total_energy_consumed,
+        total_travel_time_s=total_travel_time_s,
+        final_velocity_mps=final_velocity_mps,
+        total_energy_consumed_j=total_energy_consumed_j,
         position_vs_time_trajectory=position_vs_time_trajectory,
         velocity_vs_time_trajectory=velocity_vs_time_trajectory,
         acceleration_vs_time_trajectory=acceleration_vs_time_trajectory,
@@ -87,7 +91,7 @@ def get_simulation_results(segments: list[Segment], coils: dict[int, Coil]):
     acceleration_vs_time_trajectory = []
     force_applied_vs_time = []
     total_energy_consumed_metrics = []
-    total_energy_consumed = 0
+    total_energy_consumed_j = 0
     
     for segment in segments:
         is_accel = isinstance(segment, AccelerationSegment)
@@ -121,23 +125,23 @@ def get_simulation_results(segments: list[Segment], coils: dict[int, Coil]):
             )
         )
 
-        total_energy_consumed += segment.energy_consumed if is_accel else 0
+        total_energy_consumed_j += segment.energy_consumed if is_accel else 0
 
         total_energy_consumed_metrics.append(
             TotalEnergyConsumedVsTimePoint(
                 time=segment.start_time,
-                total_energy_consumed=total_energy_consumed
+                total_energy_consumed_j=total_energy_consumed_j
             )
         )
 
-    total_travel_time = sum(segment.traverse_time for segment in segments)
-    final_velocity = segments[-1].final_velocity if isinstance(segments[-1], AccelerationSegment) else segments[-1].velocity
-    total_energy_consumed = sum(
+    total_travel_time_s = sum(segment.traverse_time for segment in segments)
+    final_velocity_mps = segments[-1].final_velocity if isinstance(segments[-1], AccelerationSegment) else segments[-1].velocity
+    total_energy_consumed_j = sum(
         segment.energy_consumed for segment in segments 
         if isinstance(segment, AccelerationSegment)
     )
 
-    return position_vs_time_trajectory, velocity_vs_time_trajectory, acceleration_vs_time_trajectory, force_applied_vs_time, total_energy_consumed_metrics, total_travel_time, final_velocity, total_energy_consumed
+    return position_vs_time_trajectory, velocity_vs_time_trajectory, acceleration_vs_time_trajectory, force_applied_vs_time, total_energy_consumed_metrics, total_travel_time_s, final_velocity_mps, total_energy_consumed_j
 
 
 def format_system_details_for_simulation_result(system: System) -> dict[str, float | int | str | dict | list]:
@@ -166,6 +170,40 @@ def format_system_details_for_simulation_result(system: System) -> dict[str, flo
         ],
     }
 
+def create_all_simulation_entities(complete_flow_request: CompleteFlowRequest) -> int:
+    tube_id = get_next_id(Tube.DATABASE_FILE_PATH)
+    Tube(
+        tube_id=tube_id, 
+        length=complete_flow_request.tube.length
+    )
+    
+    capsule_id = get_next_id(Capsule.DATABASE_FILE_PATH)
+    Capsule(
+        capsule_id=capsule_id,
+        mass=complete_flow_request.capsule.mass,
+        initial_velocity=complete_flow_request.capsule.initial_velocity
+    )
+    
+    coil_ids_to_positions = {}
+    for coil_data in complete_flow_request.coils:
+        coil_id = get_next_id(Coil.DATABASE_FILE_PATH)
+        Coil(
+            coil_id=coil_id,
+            length=coil_data.length,
+            force_applied=coil_data.force_applied
+        )
+        coil_ids_to_positions[coil_id] = coil_data.position
+    
+    system_id = get_next_id(System.DATABASE_FILE_PATH)
+    System(
+        system_id=system_id,
+        tube_id=tube_id,
+        coil_ids_to_positions=coil_ids_to_positions,
+        capsule_id=capsule_id
+    )
+
+    return system_id
+
 
 def simulation_start_log(system: System) -> str:
     """
@@ -186,7 +224,7 @@ def simulation_start_log(system: System) -> str:
     return _current_simulation_id
 
 
-def simulation_complete_log(total_travel_time: float, final_velocity: float, total_energy_consumed: float = None) -> None:
+def simulation_complete_log(total_travel_time_s: float, final_velocity_mps: float, total_energy_consumed_j: float = None) -> None:
     """Complete the current simulation run with summary statistics"""
     global _current_simulation_id, _log_data_access
     
@@ -194,9 +232,9 @@ def simulation_complete_log(total_travel_time: float, final_velocity: float, tot
         try:
             _log_data_access.complete_simulation_run(
                 simulation_id=_current_simulation_id,
-                total_travel_time=total_travel_time,
-                final_velocity=final_velocity,
-                total_energy_consumed=total_energy_consumed
+                total_travel_time_s=total_travel_time_s,
+                final_velocity_mps=final_velocity_mps,
+                total_energy_consumed_j=total_energy_consumed_j
             )
         except Exception as e:
             print(f"Failed to complete simulation logging: {e}")

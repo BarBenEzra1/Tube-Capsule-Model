@@ -30,7 +30,7 @@ class SimulationRunDataAccess:
         return simulation_id
         
     
-    def complete_simulation_run(self, simulation_id: str, total_travel_time: float, final_velocity: float, total_energy_consumed: float = None) -> None:
+    def complete_simulation_run(self, simulation_id: str, total_travel_time_s: float, final_velocity_mps: float, total_energy_consumed_j: float = None) -> None:
         """Mark a simulation run as completed and update summary statistics"""
         
         simulation_run = self.db.query(SimulationRun).filter(
@@ -38,9 +38,9 @@ class SimulationRunDataAccess:
         ).first()
         
         if simulation_run:
-            simulation_run.total_travel_time = total_travel_time
-            simulation_run.final_velocity = final_velocity
-            simulation_run.total_energy_consumed = total_energy_consumed
+            simulation_run.total_travel_time_s = total_travel_time_s
+            simulation_run.final_velocity_mps = final_velocity_mps
+            simulation_run.total_energy_consumed_j = total_energy_consumed_j
             simulation_run.completed_at = datetime.now(timezone.utc)
             simulation_run.status = "completed"
             

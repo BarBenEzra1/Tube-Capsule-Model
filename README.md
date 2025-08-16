@@ -213,29 +213,105 @@ The simulation generates comprehensive trajectory data:
         ]
       }
     ],
-    "total_travel_time": 5.190295951692362,
-    "final_velocity": 1.8027756377319946,
+    "total_travel_time_s": 3.760018387919162,
+    "final_velocity_mps": 1.8027756377319946,
+    "total_energy_consumed_j": 1.5,
     "position_vs_time_trajectory": [
-        {"time": 0.0, "position": 0.0},
-        {"time": 1.3, "position": 0.65},
-        {"time": 3.760018387919162, "position": 5.0}
+      {
+        "time": 0.0,
+        "position": 0.0
+      },
+      {
+        "time": 1.3,
+        "position": 0.65
+      },
+      {
+        "time": 1.4302775637731995,
+        "position": 0.8
+      },
+      {
+        "time": 3.760018387919162,
+        "position": 5.0
+      }
     ],
     "velocity_vs_time_trajectory": [
-        {"time": 0.0, "velocity": 0.5},
-        {"time": 1.3, "velocity": 1.8027756377319946},
-        {"time": 3.760018387919162, "velocity": 1.8027756377319946}
+      {
+        "time": 0.0,
+        "velocity": 0.5
+      },
+      {
+        "time": 1.3,
+        "velocity": 1.8027756377319946
+      },
+      {
+        "time": 1.4302775637731995,
+        "velocity": 1.8027756377319946
+      },
+      {
+        "time": 3.760018387919162,
+        "velocity": 1.8027756377319946
+      }
     ],
     "acceleration_vs_time_trajectory": [
-        {"time": 0.0, "acceleration": 0.0},
-        {"time": 1.3, "acceleration": 10.0},
-        {"time": 3.760018387919162, "acceleration": 0.0}
+      {
+        "time": 0.0,
+        "acceleration": 0.0
+      },
+      {
+        "time": 1.3,
+        "acceleration": 10.0
+      },
+      {
+        "time": 1.4302775637731995,
+        "acceleration": 0.0
+      },
+      {
+        "time": 3.760018387919162,
+        "acceleration": 0.0
+      }
+    ],
+    "force_applied_vs_time_trajectory": [
+      {
+        "time": 0.0,
+        "force_applied": 0.0
+      },
+      {
+        "time": 1.3,
+        "force_applied": 10.0
+      },
+      {
+        "time": 1.4302775637731995,
+        "force_applied": 0.0
+      },
+      {
+        "time": 3.760018387919162,
+        "force_applied": 0.0
+      }
+    ],
+    "total_energy_consumed_vs_time_trajectory": [
+      {
+        "time": 0.0,
+        "total_energy_consumed_j": 0.0
+      },
+      {
+        "time": 1.3,
+        "total_energy_consumed_j": 1.5
+      },
+      {
+        "time": 1.4302775637731995,
+        "total_energy_consumed_j": 1.5
+      },
+      {
+        "time": 3.760018387919162,
+        "total_energy_consumed_j": 1.5
+      }
     ],
     "coil_engagement_logs": [
         {"t_s": 0.0, "event": "run_start", "position_m": 0.0, "velocity_mps": 0.5, "acceleration_mps2": 0.0, "force_applied_n": 0.0, "energy_consumed_j": 0.0},
         {"t_s": 1.0, "event": "coil_enter", "coil_id": 3, "position_m": 0.5, "velocity_mps": 0.5, "acceleration_mps2": 0.0, "force_applied_n": 0.0, "energy_consumed_j": 0.0},
-        {"t_s": 1.3, "event": "coil_midpoint_accel", "coil_id": 3, "position_m": 0.65, "velocity_mps": 0.5, "acceleration_mps2": 10.0, "force_applied_nN": 10.0},
-        {"t_s": 1.4303, "event": "coil_exit", "coil_id": 3, "velocity_mps": 1.8027756377319946, "acceleration_duration_s": 0.13027756377319946, "acceleration_segment_length_m": 0.15, "energy_consumed_j": 1.5},
-        {"t_s": 3.76, "event": "run_end", "velocity_mps": 1.8027756377319946, "tube_length_m": 5.0}
+        {"t_s": 1.3, "event": "coil_midpoint_accel", "coil_id": 3, "position_m": 0.65, "velocity_mps": 0.5, "acceleration_mps2": 10.0, "force_applied_nN": 10.0, "energy_consumed_j": 0.0},
+        {"t_s": 1.4303, "event": "coil_exit", "coil_id": 3, "position_m": 0.8, "velocity_mps": 1.8027756377319946, "acceleration_mps2": 0.0, "acceleration_duration_s": 0.13027756377319946, "acceleration_segment_length_m": 0.15, "force_applied_n": 0.0, "energy_consumed_j": 1.5},
+        {"t_s": 3.76, "event": "run_end", "position_m": 5.0, "velocity_mps": 1.8027756377319946, "acceleration_mps2": 0.0, "force_applied_n": 0.0, "energy_consumed_j": 0.0}
     ]
   }
 }
