@@ -181,12 +181,58 @@ curl -X POST "http://localhost:8000/simulation/" \
   --output simulation_result.json.gz
 ```
 
+### 4. Complete Flow Simulation (All-in-One)
+
+For convenience, you can create all entities and run the simulation in a single request:
+
+```bash
+curl -X POST "http://localhost:8000/simulation/complete-flow" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "tube": {
+      "length": 1000.0
+    },
+    "capsule": {
+      "mass": 100.0,
+      "initial_velocity": 10.0
+    },
+    "coils": [
+      {
+        "length": 50.0,
+        "force_applied": 1000.0,
+        "position": 200.0
+      },
+      {
+        "length": 60.0,
+        "force_applied": 1200.0,
+        "position": 500.0
+      },
+      {
+        "length": 40.0,
+        "force_applied": 800.0,
+        "position": 800.0
+      }
+    ]
+  }' \
+  --output simulation_result.json.gz
+```
+
+This endpoint automatically:
+- Creates a tube with the specified length
+- Creates a capsule with the specified mass and initial velocity
+- Creates all coils with their properties and positions
+- Assembles them into a system
+- Runs the simulation
+- Returns the compressed simulation results
+
 The simulation returns a compressed JSON file containing:
 - Complete position vs. time trajectory points
 - Velocity vs. time trajectory points
 - Acceleration vs. time trajectory points
-- Coil engagement logs with energy consumption data
-- Summary statistics (total travel time, max velocity, final velocity)
+- Force applied vs. time trajectory points
+- Total energy consumed vs. time trajectory points
+- Coil engagement logs
+- Summary statistics (total travel time, final velocity)
 
 ## 📊 Simulation Output
 
@@ -352,7 +398,6 @@ The application uses JSONL (JSON Lines) files for data persistence:
 - `app/data/capsule.jsonl` - Capsule specifications  
 - `app/data/coil.jsonl` - Electromagnetic coil data
 - `app/data/system.jsonl` - Complete system configurations
-- `app/data/logs/` - Simulation execution logs
 
 ### Physics Parameters
 
@@ -360,12 +405,3 @@ Key physics calculations include:
 - **Acceleration**: F = ma (Force = mass × acceleration)
 - **Kinematic equations**: For position, velocity, and time relationships
 - **Energy consumption**: Work = Force × Distance for each coil activation
-
-## 🔮 Future Enhancements
-
-- Database integration (PostgreSQL/SQLite)
-- WebSocket support for real-time simulation streaming
-- 3D visualization of capsule trajectories
-- Advanced physics models (air resistance, magnetic field interactions)
-- Multi-capsule system simulations
-- Performance optimization for large-scale systems 
