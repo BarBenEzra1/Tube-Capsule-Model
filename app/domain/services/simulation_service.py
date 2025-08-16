@@ -3,12 +3,12 @@ from app.database.config import SessionLocal
 from sqlalchemy.orm import Session
 from app.database.models import SimulationRun
 from app.domain.entities.coil import Coil
-from app.domain.services.engagement_events_service import initialize_engagement_events, get_engagement_events, set_current_simulation_id, set_current_system_id
+from app.domain.services.engagement_events_service import initialize_engagement_events, get_engagement_events
 from app.domain.services.segments_service import run_simulation_and_get_segments
 from app.domain.services.system_service import get_system_by_id, get_system_coils
 from app.domain.services.tube_service import get_tube_by_id
 from app.domain.services.capsule_service import get_capsule_by_id
-from app.domain.schemas.simulation_schemas import SimulationResponse, SimulationError, SimulationResult, PositionVsTimePoint, VelocityVsTimePoint, AccelerationVsTimePoint, ForceAppliedVsTimePoint, TotalEnergyConsumedVsTimePoint
+from app.domain.schemas.simulation_schemas import SimulationResult, PositionVsTimePoint, VelocityVsTimePoint, AccelerationVsTimePoint, ForceAppliedVsTimePoint, TotalEnergyConsumedVsTimePoint
 from app.domain.entities.acceleration_segment import AccelerationSegment
 from app.domain.entities.segment import Segment
 from app.domain.entities.system import System
@@ -17,72 +17,54 @@ from app.domain.entities.tube import Tube
 from app.domain.schemas.simulation_schemas import CompleteFlowRequest
 from app.domain.utils.get_next_id import get_next_id
 
-_current_simulation_id: str | None = None
 _current_system_id: int | None = None
-_log_data_access: SimulationRunDataAccess | None = None
+_simulation_run_data_access: SimulationRunDataAccess | None = None
 
 
-def run_simulation_by_system_id(system_id: int) -> SimulationResponse:
+def run_simulation_by_system_id(system_id: int) -> SimulationResult:
     system = get_system_by_id(system_id)
 
     if system is None:
         raise ValueError(f"System with id {system_id} not found")
     
-    initialize_engagement_events()
-    simulation_id = simulation_start_log(system)
-    segments = run_simulation_and_get_segments(system)
+    system_details = format_system_details(system)
+    simulation_id = simulation_start(system, system_details)
 
-    coils = get_system_coils(system)
-    position_vs_time_trajectory, velocity_vs_time_trajectory, acceleration_vs_time_trajectory, force_applied_vs_time, total_energy_consumed_metrics, total_travel_time_s, final_velocity_mps, total_energy_consumed_j = get_simulation_results(segments, coils)
+    try:
+        initialize_engagement_events(simulation_id, system_id)
 
-    simulation_complete_log(
-        total_travel_time_s=total_travel_time_s,
-        final_velocity_mps=final_velocity_mps,
-        total_energy_consumed_j=total_energy_consumed_j
-    )
+        segments = run_simulation_and_get_segments(system)
+
+        coils = get_system_coils(system)
+        position_vs_time_trajectory, velocity_vs_time_trajectory, acceleration_vs_time_trajectory, force_applied_vs_time, total_energy_consumed_metrics, total_travel_time_s, final_velocity_mps, total_energy_consumed_j = get_simulation_results(segments, coils)
+
+        update_simulation_run_to_completed(
+            simulation_id=simulation_id,
+            total_travel_time_s=total_travel_time_s,
+            final_velocity_mps=final_velocity_mps,
+            total_energy_consumed_j=total_energy_consumed_j
+        )
     
-    db_events = get_engagement_events(simulation_id)
-    coil_engagement_logs = []
+        coil_engagement_logs = get_coil_engagement_logs(simulation_id)
 
-    fields = [
-        "coil_id",
-        "position_m",
-        "velocity_mps",
-        "acceleration_mps2",
-        "acceleration_duration_s",
-        "acceleration_segment_length_m",
-        "force_applied_n",
-        "energy_consumed_j"
-    ]
+        return SimulationResult(
+            simulation_id=simulation_id,
+            system_id=system_id,
+            system_details=system_details,
+            total_travel_time_s=total_travel_time_s,
+            final_velocity_mps=final_velocity_mps,
+            total_energy_consumed_j=total_energy_consumed_j,
+            position_vs_time_trajectory=position_vs_time_trajectory,
+            velocity_vs_time_trajectory=velocity_vs_time_trajectory,
+            acceleration_vs_time_trajectory=acceleration_vs_time_trajectory,
+            force_applied_vs_time_trajectory=force_applied_vs_time,
+            total_energy_consumed_vs_time_trajectory=total_energy_consumed_metrics,
+            coil_engagement_logs=coil_engagement_logs,
+        )
 
-    for event in db_events:
-        log_entry = {
-            "t_s": event.timestamp_s,
-            "event": event.event
-        }
-        log_entry.update({
-            field: getattr(event, field)
-            for field in fields
-            if getattr(event, field) is not None
-        })
-        coil_engagement_logs.append(log_entry)
-
-    simulation_result = SimulationResult(
-        simulation_id=simulation_id,
-        system_id=system_id,
-        system_details=format_system_details_for_simulation_result(system),
-        total_travel_time_s=total_travel_time_s,
-        final_velocity_mps=final_velocity_mps,
-        total_energy_consumed_j=total_energy_consumed_j,
-        position_vs_time_trajectory=position_vs_time_trajectory,
-        velocity_vs_time_trajectory=velocity_vs_time_trajectory,
-        acceleration_vs_time_trajectory=acceleration_vs_time_trajectory,
-        force_applied_vs_time_trajectory=force_applied_vs_time,
-        total_energy_consumed_vs_time_trajectory=total_energy_consumed_metrics,
-        coil_engagement_logs=coil_engagement_logs,
-    )
-
-    return SimulationResponse(success=True, result=simulation_result)
+    except Exception as e:
+        update_simulation_run_to_failed(simulation_id)
+        raise e
 
 
 def get_simulation_results(segments: list[Segment], coils: dict[int, Coil]):
@@ -144,7 +126,37 @@ def get_simulation_results(segments: list[Segment], coils: dict[int, Coil]):
     return position_vs_time_trajectory, velocity_vs_time_trajectory, acceleration_vs_time_trajectory, force_applied_vs_time, total_energy_consumed_metrics, total_travel_time_s, final_velocity_mps, total_energy_consumed_j
 
 
-def format_system_details_for_simulation_result(system: System) -> dict[str, float | int | str | dict | list]:
+def get_coil_engagement_logs(simulation_id: str) -> list[dict[str, float | int | str]]:
+    db_events = get_engagement_events(simulation_id)
+    coil_engagement_logs = []
+
+    fields = [
+        "coil_id",
+        "position_m",
+        "velocity_mps",
+        "acceleration_mps2",
+        "acceleration_duration_s",
+        "acceleration_segment_length_m",
+        "force_applied_n",
+        "energy_consumed_j"
+    ]
+
+    for event in db_events:
+        log_entry = {
+            "t_s": event.timestamp_s,
+            "event": event.event
+        }
+        log_entry.update({
+            field: getattr(event, field)
+            for field in fields
+            if getattr(event, field) is not None
+        })
+        coil_engagement_logs.append(log_entry)
+
+    return coil_engagement_logs
+
+
+def format_system_details(system: System) -> dict[str, float | int | str | dict | list]:
     tube = get_tube_by_id(system.tube_id)
     capsule = get_capsule_by_id(system.capsule_id)
     coils = get_system_coils(system)
@@ -169,6 +181,7 @@ def format_system_details_for_simulation_result(system: System) -> dict[str, flo
             for coil in coils.values()
         ],
     }
+
 
 def create_all_simulation_entities(complete_flow_request: CompleteFlowRequest) -> int:
     tube_id = get_next_id(Tube.DATABASE_FILE_PATH)
@@ -205,57 +218,60 @@ def create_all_simulation_entities(complete_flow_request: CompleteFlowRequest) -
     return system_id
 
 
-def simulation_start_log(system: System) -> str:
+def simulation_start(system: System, system_details: dict[str, float | int | str | dict | list]) -> str:
     """
     Initialize logging for a new simulation run.
     Returns the simulation_id that should be used for all subsequent logs.
     """
-    global _current_simulation_id, _current_system_id, _log_data_access
+    global _current_system_id, _simulation_run_data_access
     
-    db = SessionLocal()
-    _log_data_access = SimulationRunDataAccess(db)
-    
-    _current_simulation_id = _log_data_access.start_simulation_run(system.id)
-    set_current_simulation_id(_current_simulation_id)
-
     _current_system_id = system.id
-    set_current_system_id(_current_system_id)
+
+    db = SessionLocal()
+    _simulation_run_data_access = SimulationRunDataAccess(db)
     
-    return _current_simulation_id
+    return _simulation_run_data_access.insert_simulation_run(system.id, system_details)
 
 
-def simulation_complete_log(total_travel_time_s: float, final_velocity_mps: float, total_energy_consumed_j: float = None) -> None:
+def update_simulation_run_to_completed(simulation_id: str, total_travel_time_s: float, final_velocity_mps: float, total_energy_consumed_j: float = None) -> SimulationRun | None:
     """Complete the current simulation run with summary statistics"""
-    global _current_simulation_id, _log_data_access
+    global _simulation_run_data_access
     
-    if _current_simulation_id and _log_data_access:
+    if _simulation_run_data_access:
         try:
-            _log_data_access.complete_simulation_run(
-                simulation_id=_current_simulation_id,
+            simulation_run = _simulation_run_data_access.simulation_complete(
+                simulation_id=simulation_id,
                 total_travel_time_s=total_travel_time_s,
                 final_velocity_mps=final_velocity_mps,
                 total_energy_consumed_j=total_energy_consumed_j
             )
+
+            return simulation_run
         except Exception as e:
             print(f"Failed to complete simulation logging: {e}")
+            return None
     
-    # Reset global state
-    _current_simulation_id = None
-    _current_system_id = None
 
+def update_simulation_run_to_failed(simulation_id: str) -> SimulationRun | None:
+    """Fail the current simulation run with an error message"""
+    global _simulation_run_data_access
+    
+    if _simulation_run_data_access:
+        return _simulation_run_data_access.simulation_failed(simulation_id)
+    
 
 def get_simulation_run(simulation_id: str) -> SimulationRun | None:
     """Get a simulation run by its ID"""
-    global _log_data_access
-    return _log_data_access.get_simulation_run_by_id(simulation_id)
+    global _simulation_run_data_access
+    return _simulation_run_data_access.get_simulation_run_by_id(simulation_id)
 
 
 def get_valid_simulation_run(simulation_id: str, db: Session) -> SimulationRun:
     """Get a valid simulation run by its ID"""
-    global _log_data_access
+    global _simulation_run_data_access
 
-    _log_data_access = SimulationRunDataAccess(db)
-    simulation_run = _log_data_access.get_simulation_run_by_id(simulation_id)
+    _simulation_run_data_access = SimulationRunDataAccess(db)
+    simulation_run = _simulation_run_data_access.get_simulation_run_by_id(simulation_id)
 
     if not simulation_run:
         raise ValueError(f"Simulation run with id {simulation_id} not found")
@@ -264,13 +280,6 @@ def get_valid_simulation_run(simulation_id: str, db: Session) -> SimulationRun:
         raise ValueError(f"Simulation run with id {simulation_id} is not completed")
 
     return simulation_run
-
-
-def get_current_simulation_id() -> str | None:
-    """Get the current simulation ID"""
-    global _current_simulation_id
-
-    return _current_simulation_id
 
 
 def get_current_system_id() -> int | None:

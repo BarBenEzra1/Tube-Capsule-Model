@@ -4,10 +4,10 @@ class Segment:
     
     Attributes:
         id (int): Unique identifier for the segment
-        traverse_time (float): Time taken by the capsule to traverse the segment, in seconds
         start_time (float): Start time of the capsule within the segment, in seconds
-        length (float): Length of the segment, in meters
         starting_position (float): Starting position of the segment relative to the beginning of the tube, in meters
+        traverse_time (float): Time taken by the capsule to traverse the segment, in seconds
+        length (float): Length of the segment, in meters
         related_coil_id (int, optional): ID of the coil associated with this segment. None for first segment.
     """
 

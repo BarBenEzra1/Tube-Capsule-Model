@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import List
 
 
 class CoilData(BaseModel):
@@ -65,15 +65,3 @@ class SimulationResult(BaseModel):
     force_applied_vs_time_trajectory: List[ForceAppliedVsTimePoint] = Field(description="Force applied vs time trajectory")
     total_energy_consumed_vs_time_trajectory: List[TotalEnergyConsumedVsTimePoint] = Field(description="Total energy consumed vs time trajectory")
     coil_engagement_logs: list[dict[str, float | int | str]] = Field(description="Logs of coil engagement")
-
-
-class SimulationError(BaseModel):
-    system_id: int
-    error_message: str
-    error_code: str
-
-
-class SimulationResponse(BaseModel):
-    success: bool
-    result: Optional[SimulationResult] = None
-    error: Optional[SimulationError] = None 

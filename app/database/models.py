@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Float, String, DateTime, Index
+from sqlalchemy import Column, Integer, Float, String, DateTime, Index, JSON
 from sqlalchemy.sql import func
 from .config import Base
 
@@ -42,6 +42,7 @@ class SimulationRun(Base):
 
     id = Column(String(50), primary_key=True)
     system_id = Column(Integer, nullable=False, index=True)
+    system_details = Column(JSON, nullable=False)
     total_travel_time_s = Column(Float, nullable=True)
     final_velocity_mps = Column(Float, nullable=True)
     total_energy_consumed_j = Column(Float, nullable=True)

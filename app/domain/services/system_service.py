@@ -4,7 +4,10 @@ import os, json
 from pathlib import Path
 import tempfile
 from app.domain.entities.coil import Coil
+from app.domain.services.capsule_service import delete_capsule_by_id
 from app.domain.services.coil_service import get_coil_by_id
+from app.domain.services.coil_service import delete_coil_by_id
+from app.domain.services.tube_service import delete_tube_by_id
 
 
 class UpdateSystemStatus(Enum):
@@ -28,7 +31,7 @@ def read_all_systems():
     return systems
 
 
-def delete_system_by_id(system_id: int) -> bool:
+def delete_system_by_id(system_id: int, force_delete_related_entities: bool = False) -> bool:
     if not System.DATABASE_FILE_PATH.exists():
         return False
 
@@ -42,12 +45,21 @@ def delete_system_by_id(system_id: int) -> bool:
             record = json.loads(line)
             if record.get("id") == system_id:
                 found = True
-                continue  # skip adding this one
+                continue
             lines_to_keep.append(line)
 
     if found:
+        system = get_system_by_id(system_id)
+
         with open(System.DATABASE_FILE_PATH, "w", encoding="utf-8") as f:
             f.writelines(lines_to_keep)
+
+        if force_delete_related_entities:
+            for coil_id in system.coil_ids_to_positions.keys():
+                delete_coil_by_id(coil_id)
+
+            delete_capsule_by_id(system.capsule_id)
+            delete_tube_by_id(system.tube_id)
 
     return found
 
@@ -66,7 +78,6 @@ def get_system_by_id(system_id: int) -> System | None:
             except json.JSONDecodeError:
                 continue
             if record.get("id") == system_id:
-                # Convert string keys to integers for coil_ids_to_positions
                 coil_ids_to_positions = {int(k): v for k, v in record["coil_ids_to_positions"].items()}
                 return System(system_id=record["id"], tube_id=record["tube_id"], coil_ids_to_positions=coil_ids_to_positions, capsule_id=record["capsule_id"], save_to_file=False)
     return None

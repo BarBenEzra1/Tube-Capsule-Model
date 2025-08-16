@@ -69,9 +69,9 @@ async def update_system(system_id: int, system: SystemUpdate):
 
 
 @router.delete("/{system_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_system(system_id: int):
+async def delete_system(system_id: int, force_delete_related_entities: bool = False):
     """Delete system by id"""
-    deleted = delete_system_by_id(system_id)
+    deleted = delete_system_by_id(system_id, force_delete_related_entities)
     if not deleted:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

@@ -7,7 +7,6 @@ _current_simulation_id: str | None = None
 _engagement_events_data_access: EngagementEventsDataAccess | None = None
 _current_system_id: int | None = None
 
-
 def engagement_event_log(timestamp_s: float, event: str, **kv) -> None:
     """
     Log a simulation event to the PostgreSQL database.
@@ -17,9 +16,9 @@ def engagement_event_log(timestamp_s: float, event: str, **kv) -> None:
         event: Event type/name
         **kv: Additional event data as key-value pairs
     """
-    global _current_simulation_id, _current_system_id, _engagement_events_data_access
+    global _current_system_id, _engagement_events_data_access
     
-    if not _current_simulation_id or not _engagement_events_data_access:
+    if not _engagement_events_data_access:
         return
     
     try:
@@ -48,22 +47,13 @@ def get_engagement_events(simulation_id: str, event: str | None = None, coil_id:
         return engagement_events_data_access.get_events(simulation_id)
 
 
-def initialize_engagement_events() -> EngagementEventsDataAccess:
+def initialize_engagement_events(simulation_id: str, system_id: int) -> EngagementEventsDataAccess:
     """Create a new log data access instance"""
-    global _engagement_events_data_access
+    global _engagement_events_data_access, _current_simulation_id
     
     db = SessionLocal()
-    _engagement_events_data_access = EngagementEventsDataAccess(db) 
-    return _engagement_events_data_access
-
-
-def set_current_simulation_id(simulation_id: str) -> None:
-    """Set the current simulation ID"""
-    global _current_simulation_id
+    _engagement_events_data_access = EngagementEventsDataAccess(db)
     _current_simulation_id = simulation_id
-
-
-def set_current_system_id(system_id: int) -> None:
-    """Set the current system ID"""
-    global _current_system_id
     _current_system_id = system_id
+
+    return _engagement_events_data_access
