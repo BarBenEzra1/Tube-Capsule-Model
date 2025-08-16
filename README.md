@@ -136,6 +136,18 @@ docker exec -it tube-capsule-postgres psql -U postgres -d tube_capsule_db
 
 ### Simulation
 - `POST /simulation/` - Run physics simulation and download results
+- `POST /simulation/complete-flow` - Create all entities and run simulation in one request
+- `GET /simulation/{simulation_id}` - Get simulation run details by ID
+
+### Analytics
+- `GET /analytics/simulation-runs/{simulation_id}/engagement-events` - Get engagement events for a simulation
+- `GET /analytics/simulation-runs/{simulation_id}/metrics` - Get complete trajectory metrics (position, velocity, acceleration, force, energy)
+- `GET /analytics/simulation-runs/{simulation_id}/metrics/position-vs-time` - Get position vs time trajectory
+- `GET /analytics/simulation-runs/{simulation_id}/metrics/velocity-vs-time` - Get velocity vs time trajectory
+- `GET /analytics/simulation-runs/{simulation_id}/metrics/acceleration-vs-time` - Get acceleration vs time trajectory
+- `GET /analytics/simulation-runs/{simulation_id}/metrics/force-applied-vs-time` - Get force applied vs time trajectory
+- `GET /analytics/simulation-runs/{simulation_id}/metrics/total-energy-consumed-vs-time` - Get total energy consumed vs time trajectory
+- `GET /analytics/simulation-runs/{simulation_id}/energy-consumption` - Get energy consumption analysis by coil
 
 ## 🔬 Usage Example
 
