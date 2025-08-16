@@ -18,6 +18,8 @@ async def get_simulation_engagement_events(simulation_id: str, event: str | None
     return [
         {
             "id": event.id,
+            "simulation_id": event.simulation_id,
+            "system_id": event.system_id,
             "timestamp_s": event.timestamp_s,
             "event": event.event,
             "coil_id": event.coil_id,
